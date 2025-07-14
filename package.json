@@ -2,14 +2,16 @@
 	"name": "poker-chip-calculator",
 	"version": "0.0.0",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"predeploy": "pnpm run build",
 		"deploy": "wrangler deploy",
-		"dev": "wrangler dev",
-		"start": "wrangler dev",
+		"dev": "vite dev",
+		"start": "vite dev",
 		"build": "vite build"
 	},
 	"devDependencies": {
+		"@cloudflare/vite-plugin": "1.9.4",
 		"@tsconfig/strictest": "2.0.5",
 		"typescript": "5.8.3",
 		"vite": "7.0.4",
