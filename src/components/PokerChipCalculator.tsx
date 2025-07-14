@@ -7,6 +7,7 @@ import { Input } from "./ui/input"
 import UnitInputSelect, { calculateUnitValue, Unit } from "./UnitInputSelect"
 import { Label } from "./ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import {useSessionStorage} from "usehooks-ts"
 
 interface ChipRow {
   id: number
@@ -17,10 +18,10 @@ interface ChipRow {
 }
 
 export default function PokerChipCalculator() {
-  const [currentBlindAmount, setCurrentBlindAmount] = useState<number>(100)
-  const [currentBlindUnit, setCurrentBlindUnit] = useState<Unit>("1")
-  const [chips, setChips] = useState<ChipRow[]>([
-    { id: 1, amount: 100, unit: "1", count: 100, color: "#ef4444" },
+  const [currentBlindAmount, setCurrentBlindAmount] = useSessionStorage<number>("current-blind-amount",100)
+  const [currentBlindUnit, setCurrentBlindUnit] = useSessionStorage<Unit>("current-blind-unit", "1")
+  const [chips, setChips] = useSessionStorage<ChipRow[]>("chips", [
+    { id: 1, amount: 100, unit: "1", count: 10, color: "#ef4444" },
   ])
   const [nextId, setNextId] = useState(2)
 
