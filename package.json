@@ -13,7 +13,9 @@
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "1.9.4",
 		"@preact/preset-vite": "2.10.2",
+		"@tailwindcss/vite": "4.1.11",
 		"@tsconfig/strictest": "2.0.5",
+		"tailwindcss": "4.1.11",
 		"typescript": "5.8.3",
 		"vite": "7.0.4",
 		"wrangler": "4.24.3"
