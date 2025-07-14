@@ -7,7 +7,7 @@
 	"name": "poker-chip-calculator",
 	"compatibility_date": "2025-07-12",
 	"assets": {
-		"directory": "./public"
+		"directory": "./dist"
 	},
 	"observability": {
 		"enabled": true
