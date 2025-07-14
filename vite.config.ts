@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite';
 import { cloudflare } from "@cloudflare/vite-plugin";
-import preact from "@preact/preset-vite";
+import react from "@vitejs/plugin-react-swc";
 import tailwindcss from '@tailwindcss/vite'
+import { resolve } from 'path';
 
 
 export default defineConfig({
-  plugins: [cloudflare(), preact(), tailwindcss()]
+  plugins: [cloudflare(), react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "./src"),
+    },
+  },
 })

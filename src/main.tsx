@@ -1,8 +1,8 @@
-import { render } from "preact"
 import { App } from "./App"
+import {createRoot} from "react-dom/client"
 
 const app = document.getElementById("app")
 
 if (!app) throw new Error("#app element not found")
 
-render(<App />, app)
+createRoot(app).render(<App />)
