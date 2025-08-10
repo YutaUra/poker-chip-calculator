@@ -39,6 +39,7 @@ export default function UnitInputSelect({ amount, unit, onChange, className, pla
     <div className={`flex gap-2 ${className}`}>
       <Input
         type="number"
+        inputMode="numeric"
         value={amount ?? ""}
         onChange={(e) => handleBaseChange(e.currentTarget.value)}
         placeholder={placeholder || "100"}

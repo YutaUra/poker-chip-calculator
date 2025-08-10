@@ -13,12 +13,12 @@ interface ChipRow {
   id: number
   amount: number
   unit: Unit
-  count: number
+  count: number | null
   color: string
 }
 
 export default function PokerChipCalculator() {
-  const [currentBlindAmount, setCurrentBlindAmount] = useSessionStorage<number>("current-blind-amount",100)
+  const [currentBlindAmount, setCurrentBlindAmount] = useSessionStorage<number | null>("current-blind-amount",100)
   const [currentBlindUnit, setCurrentBlindUnit] = useSessionStorage<Unit>("current-blind-unit", "1")
   const [chips, setChips] = useSessionStorage<ChipRow[]>("chips", [
     { id: 1, amount: 100, unit: "1", count: 10, color: "#ef4444" },
@@ -26,20 +26,20 @@ export default function PokerChipCalculator() {
   const [nextId, setNextId] = useState(2)
 
   const calculateTotal = () => {
-    return chips.reduce((total, chip) => total + calculateUnitValue(chip.amount, chip.unit) * chip.count, 0)
+    return chips.reduce((total, chip) => total + calculateUnitValue(chip.amount, chip.unit) * (chip.count ?? 0), 0)
   }
 
   const calculateBB = () => {
     if (currentBlindAmount === 0) return 0
-    return calculateTotal() / calculateUnitValue(currentBlindAmount, currentBlindUnit)
+    return calculateTotal() / calculateUnitValue((currentBlindAmount ?? 0), currentBlindUnit)
   }
 
   const updateChipAmount = (id: number, amount: number, unit: Unit) => {
     setChips((prevChips) => prevChips.map((chip) => (chip.id === id ? { ...chip, amount, unit } : chip)).sort((a, b) => calculateUnitValue(a.amount, a.unit)-calculateUnitValue(b.amount, b.unit)))
   }
 
-  const updateChipCount = (id: number, value: number) => {
-    setChips((prevChips) => prevChips.map((chip) => (chip.id === id ? { ...chip, count: Math.max(0, value) } : chip)))
+  const updateChipCount = (id: number, value: number | null) => {
+    setChips((prevChips) => prevChips.map((chip) => (chip.id === id ? { ...chip, count: value } : chip)))
   }
 
   const updateChipColor = (id: number, color: string) => {
@@ -77,10 +77,10 @@ export default function PokerChipCalculator() {
             <UnitInputSelect amount={currentBlindAmount} unit={currentBlindUnit} onChange={(v) => {
               if (typeof v === "function") {
                 const newValue = v({ amount: currentBlindAmount, unit: currentBlindUnit })
-                setCurrentBlindAmount(newValue.amount ?? 0)
+                setCurrentBlindAmount(newValue.amount )
                 setCurrentBlindUnit(newValue.unit)
               } else {
-                setCurrentBlindAmount(v.amount ?? 0)
+                setCurrentBlindAmount(v.amount )
                 setCurrentBlindUnit(v.unit)
               }
             }} className="w-48" />
@@ -105,8 +105,9 @@ export default function PokerChipCalculator() {
                 <Label className="text-lg">count:</Label>
                 <Input
                   type="number"
-                  value={chip.count}
-                  onChange={(e) => updateChipCount(chip.id, Number(e.currentTarget.value) || 0)}
+                  inputMode="numeric"
+                  value={chip.count ?? ""}
+                  onChange={(e) => updateChipCount(chip.id, Number(e.currentTarget.value) || null)}
                   className="text-lg"
                 />
                 <Button
