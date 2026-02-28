@@ -22,7 +22,9 @@
 - Tailwind CSS v4 + shadcn/ui (new-york スタイル)
 - Radix UI (dialog, label, select, slot)
 - lucide-react (アイコン)
-- usehooks-ts (`useSessionStorage` で状態永続化)
+- usehooks-ts (`useSessionStorage` / `useLocalStorage` で状態永続化)
+- Recharts 3 (折れ線グラフ)
+- sonner (トースト通知)
 - pnpm workspace 構成
 - Vitest + Testing Library (テスト)
 
@@ -50,12 +52,14 @@
 ```
 index.html → main.tsx → App.tsx → PokerChipCalculator.tsx
   ├── UnitInputSelect (ブラインド入力)
-  ├── Card > ChipIcon + Input + Button (チップリスト)
+  ├── ChipIcon + ScrollableCounter + Button (チップリスト)
+  ├── StackGraph (BB推移 + チップ額推移の折れ線グラフ)
   └── Total Stack 表示
 
 src/lib/
   ├── units.ts (Unit 型, calculateUnitValue - 共有単位定義)
   ├── chip-logic.ts (calculateTotal, calculateBB, sortChipsByValue)
+  ├── stack-history.ts (StackSnapshot, Session, createSnapshot, addSnapshot, etc.)
   ├── format-numbers.ts (formatChipAmount, formatFullNumber)
   └── utils.ts (cn ヘルパー)
 ```

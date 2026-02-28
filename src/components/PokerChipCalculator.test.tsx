@@ -1,9 +1,20 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import PokerChipCalculator from "./PokerChipCalculator"
 
+vi.mock("recharts", async () => {
+  const actual = await vi.importActual<typeof import("recharts")>("recharts")
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactElement }) => (
+      <div style={{ width: 400, height: 200 }}>{children}</div>
+    ),
+  }
+})
+
 beforeEach(() => {
   sessionStorage.clear()
+  localStorage.clear()
 })
 
 describe("PokerChipCalculator", () => {
@@ -51,22 +62,18 @@ describe("PokerChipCalculator", () => {
       expect(screen.queryByText("count:")).not.toBeInTheDocument()
     })
 
-    it("チップ count 入力に qty プレースホルダーが表示される", () => {
-      render(<PokerChipCalculator />)
-      expect(screen.getByPlaceholderText("qty")).toBeInTheDocument()
-    })
   })
 
   describe("チップ追加", () => {
     it("add chip ボタンでチップ行が追加される", () => {
       render(<PokerChipCalculator />)
 
-      const countInputsBefore = screen.getAllByRole("spinbutton")
+      const countInputsBefore = screen.getAllByLabelText("チップ枚数")
       const initialCount = countInputsBefore.length
 
       fireEvent.click(screen.getByText("add chip"))
 
-      const countInputsAfter = screen.getAllByRole("spinbutton")
+      const countInputsAfter = screen.getAllByLabelText("チップ枚数")
       expect(countInputsAfter.length).toBe(initialCount + 1)
     })
 
@@ -84,15 +91,12 @@ describe("PokerChipCalculator", () => {
     it("枚数を変更すると Total Stack が更新される", () => {
       render(<PokerChipCalculator />)
 
-      // 初期チップの count 入力を取得（最初の spinbutton がブラインド、その次がチップ count）
-      const spinbuttons = screen.getAllByRole("spinbutton")
-      // ブラインド入力の次にチップの count 入力がある
-      const chipCountInput = spinbuttons.find(
-        input => (input as HTMLInputElement).value === "10"
-      )
-      expect(chipCountInput).toBeDefined()
+      const chipCounter = screen.getByLabelText("チップ枚数")
 
-      fireEvent.change(chipCountInput!, { target: { value: "20" } })
+      // ArrowUp を10回押して枚数を 10 → 20 に増やす
+      for (let i = 0; i < 10; i++) {
+        fireEvent.keyDown(chipCounter, { key: "ArrowUp" })
+      }
 
       // 100 × 20 = 2,000
       expect(screen.getByText("Total Stack: 2K")).toBeInTheDocument()
@@ -127,6 +131,120 @@ describe("PokerChipCalculator", () => {
       render(<PokerChipCalculator />)
       // 100 × 10 = 1,000 → formatChipAmount(1000) = "1K"
       expect(screen.getByText("= 1K")).toBeInTheDocument()
+    })
+  })
+
+  describe("スタック記録", () => {
+    it("記録ボタンが表示される", () => {
+      render(<PokerChipCalculator />)
+      expect(screen.getByText("記録")).toBeInTheDocument()
+    })
+
+    it("Stack Graph セクションが表示される", () => {
+      render(<PokerChipCalculator />)
+      expect(screen.getByText("Stack Graph")).toBeInTheDocument()
+    })
+
+    it("記録0件の場合プレースホルダーが表示される", () => {
+      render(<PokerChipCalculator />)
+      expect(screen.getByText("記録ボタンを押してスタックを記録しましょう")).toBeInTheDocument()
+    })
+
+    it("記録ボタンを押すとプレースホルダーが消える", () => {
+      render(<PokerChipCalculator />)
+
+      fireEvent.click(screen.getByText("記録"))
+
+      expect(screen.queryByText("記録ボタンを押してスタックを記録しましょう")).not.toBeInTheDocument()
+    })
+
+    it("記録ボタンを押すと取消ボタンとリセットボタンが表示される", () => {
+      render(<PokerChipCalculator />)
+
+      fireEvent.click(screen.getByText("記録"))
+
+      expect(screen.getByLabelText("直前の記録を削除")).toBeInTheDocument()
+      expect(screen.getByLabelText("新しいセッションを開始")).toBeInTheDocument()
+    })
+
+    it("記録0件の場合は取消・リセットボタンが表示されない", () => {
+      render(<PokerChipCalculator />)
+
+      expect(screen.queryByLabelText("直前の記録を削除")).not.toBeInTheDocument()
+      expect(screen.queryByLabelText("新しいセッションを開始")).not.toBeInTheDocument()
+    })
+
+    it("取消ボタンで直前の記録が削除される", () => {
+      render(<PokerChipCalculator />)
+
+      fireEvent.click(screen.getByText("記録"))
+      fireEvent.click(screen.getByLabelText("直前の記録を削除"))
+
+      expect(screen.getByText("記録ボタンを押してスタックを記録しましょう")).toBeInTheDocument()
+    })
+
+    it("リセットボタンで確認ダイアログが表示される", () => {
+      render(<PokerChipCalculator />)
+
+      fireEvent.click(screen.getByText("記録"))
+      fireEvent.click(screen.getByLabelText("新しいセッションを開始"))
+
+      expect(screen.getByText("新しいセッションを開始")).toBeInTheDocument()
+      expect(screen.getByText("リセットする")).toBeInTheDocument()
+    })
+
+    it("確認ダイアログでリセットすると記録がクリアされる", () => {
+      render(<PokerChipCalculator />)
+
+      fireEvent.click(screen.getByText("記録"))
+      fireEvent.click(screen.getByLabelText("新しいセッションを開始"))
+      fireEvent.click(screen.getByText("リセットする"))
+
+      expect(screen.getByText("記録ボタンを押してスタックを記録しましょう")).toBeInTheDocument()
+    })
+
+    it("メモ入力欄が表示される", () => {
+      render(<PokerChipCalculator />)
+      expect(screen.getByLabelText("記録メモ")).toBeInTheDocument()
+    })
+
+    it("メモ入力後に記録するとメモ欄がクリアされる", () => {
+      render(<PokerChipCalculator />)
+
+      const memoInput = screen.getByLabelText("記録メモ")
+      fireEvent.change(memoInput, { target: { value: "ダブルアップ" } })
+      fireEvent.click(screen.getByText("記録"))
+
+      expect(memoInput).toHaveValue("")
+    })
+  })
+
+  describe("ScrollableCounter 統合", () => {
+    it("チップ枚数の入力に ScrollableCounter が使用されている", () => {
+      render(<PokerChipCalculator />)
+
+      // ScrollableCounter は aria-label="チップ枚数" を持つ
+      // 統合されていれば、この要素が存在するはず
+      const counter = screen.getByLabelText("チップ枚数")
+      expect(counter).toBeInTheDocument()
+      expect(counter).toHaveAttribute("role", "spinbutton")
+      expect(counter).toHaveAttribute("aria-valuenow", "10")
+    })
+
+    it("ScrollableCounter のキーボード操作で合計額が更新される", () => {
+      render(<PokerChipCalculator />)
+
+      const counter = screen.getByLabelText("チップ枚数")
+
+      // ArrowUp を5回押して枚数を 10 → 15 に増やす
+      for (let i = 0; i < 5; i++) {
+        fireEvent.keyDown(counter, { key: "ArrowUp" })
+      }
+
+      // 100 × 15 = 1,500 → "1.5K"
+      expect(screen.getByText("Total Stack: 1.5K")).toBeInTheDocument()
+      expect(screen.getByText("(1,500 chips)")).toBeInTheDocument()
+      expect(screen.getByText("(15 Big Blinds)")).toBeInTheDocument()
     })
   })
 })
