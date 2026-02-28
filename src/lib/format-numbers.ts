@@ -11,7 +11,7 @@ export function formatChipAmount(amount: number): string {
   const formatted = formatter.format(amount)
 
   // ポーカーでは大文字のK/M/B/Tが一般的なので変換
-  return formatted.replace("k", "K").replace("m", "M").replace("b", "B").replace("t", "T")
+  return formatted.toUpperCase()
 }
 
 // 通常の数値フォーマット（カンマ区切り）

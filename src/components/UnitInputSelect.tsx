@@ -1,4 +1,6 @@
-import { Dispatch, SetStateAction } from "react"
+import { Unit, calculateUnitValue } from "@/lib/units"
+export type { Unit }
+export { calculateUnitValue }
 import { Input } from "./ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 
@@ -9,16 +11,11 @@ const units = [
   { label: "B", value: 1000000000 },
   { label: "T", value: 1000000000000 },
 ] as const
-export type Unit = (typeof units)[number]["label"]
-export const calculateUnitValue = (amount: number, unit: Unit): number => {
-  const unitValue = units.find(u => u.label === unit)?.value || 1
-  return amount * unitValue
-}
 
 interface UnitInputSelectProps {
   amount: number | null
   unit: Unit
-  onChange: Dispatch<SetStateAction<{amount: number | null, unit: Unit}>>
+  onChange: (value: {amount: number | null, unit: Unit}) => void
   className?: string
   placeholder?: string
 }
@@ -26,14 +23,12 @@ interface UnitInputSelectProps {
 
 export default function UnitInputSelect({ amount, unit, onChange, className, placeholder }: UnitInputSelectProps) {
   const handleBaseChange = (newBase: string) => {
-    onChange(prev => ({...prev, amount: newBase === "" ? null : Number(newBase)}))
+    onChange({amount: newBase === "" ? null : Number(newBase), unit})
   }
 
   const handleUnitChange = (newUnit: Unit) => {
-    onChange(prev => ({...prev, unit: newUnit}))
+    onChange({amount, unit: newUnit})
   }
-
-  console.log('amount', amount)
 
   return (
     <div className={`flex gap-2 ${className}`}>
