@@ -26,6 +26,6 @@ export function calculateBB(
 
 export function sortChipsByValue(chips: ChipRow[]): ChipRow[] {
   return [...chips].sort(
-    (a, b) => calculateUnitValue(b.amount, b.unit) - calculateUnitValue(a.amount, a.unit),
+    (a, b) => calculateUnitValue(a.amount, a.unit) - calculateUnitValue(b.amount, b.unit),
   )
 }

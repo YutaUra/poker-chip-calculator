@@ -136,24 +136,24 @@ describe("sortChipsByValue", () => {
     expect(sortChipsByValue(chips)).toEqual(chips)
   })
 
-  it("実効値の降順でソートする", () => {
+  it("実効値の昇順でソートする", () => {
     const chips: ChipRow[] = [
-      makeChip({ id: 1, amount: 100, unit: "1", count: 10 }),
-      makeChip({ id: 2, amount: 500, unit: "1", count: 5 }),
+      makeChip({ id: 1, amount: 500, unit: "1", count: 5 }),
+      makeChip({ id: 2, amount: 100, unit: "1", count: 10 }),
     ]
     const sorted = sortChipsByValue(chips)
-    expect(sorted[0].id).toBe(2) // 500
-    expect(sorted[1].id).toBe(1) // 100
+    expect(sorted[0].id).toBe(2) // 100
+    expect(sorted[1].id).toBe(1) // 500
   })
 
-  it("異なる単位のチップを降順でソートする", () => {
+  it("異なる単位のチップを昇順でソートする", () => {
     const chips: ChipRow[] = [
       makeChip({ id: 1, amount: 1, unit: "M", count: 1 }),  // 1,000,000
       makeChip({ id: 2, amount: 500, unit: "1", count: 1 }), // 500
       makeChip({ id: 3, amount: 5, unit: "K", count: 1 }),   // 5,000
     ]
     const sorted = sortChipsByValue(chips)
-    expect(sorted.map(c => c.id)).toEqual([1, 3, 2])
+    expect(sorted.map(c => c.id)).toEqual([2, 3, 1])
   })
 
   it("同じ実効値のチップは元の順序を維持する", () => {
@@ -177,7 +177,7 @@ describe("sortChipsByValue", () => {
     expect(chips).toEqual(original)
   })
 
-  it("3種類以上のチップを降順でソートする", () => {
+  it("3種類以上のチップを昇順でソートする", () => {
     const chips: ChipRow[] = [
       makeChip({ id: 1, amount: 1, unit: "K" }),   // 1,000
       makeChip({ id: 2, amount: 25, unit: "1" }),   // 25
@@ -186,6 +186,6 @@ describe("sortChipsByValue", () => {
       makeChip({ id: 5, amount: 5, unit: "K" }),     // 5,000
     ]
     const sorted = sortChipsByValue(chips)
-    expect(sorted.map(c => c.id)).toEqual([5, 1, 3, 4, 2])
+    expect(sorted.map(c => c.id)).toEqual([2, 4, 3, 1, 5])
   })
 })
