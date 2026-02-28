@@ -8,7 +8,6 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import UnitInputSelect from "./UnitInputSelect"
 import { Label } from "./ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import {useSessionStorage} from "usehooks-ts"
 
 export default function PokerChipCalculator() {
@@ -42,79 +41,95 @@ export default function PokerChipCalculator() {
   const bbDisplay = bbValue % 1 === 0 ? bbValue.toString() : bbValue.toFixed(1)
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6">Poker Chip Calculator</h1>
+    <div className="min-h-screen p-4 sm:p-8">
+      <div className="max-w-lg mx-auto space-y-6">
 
-        <div className="mb-8">
-          <p className="text-xl mb-4">
-            Current amount: {formatChipAmount(total)} ({bbDisplay} BB)
-          </p>
+        <header className="flex items-center gap-2.5 pt-2">
+          <span className="text-2xl text-primary">♠</span>
+          <h1 className="text-xl font-semibold tracking-tight">Poker Chip Calculator</h1>
+        </header>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-            <Label className="text-lg font-medium">
-              Big Blind (BB):
-            </Label>
-            <UnitInputSelect amount={currentBlindAmount} unit={currentBlindUnit} onChange={(v) => {
-              setCurrentBlindAmount(v.amount)
-              setCurrentBlindUnit(v.unit)
-            }} className="w-48" />
-            <span className="text-lg">Total: {formatChipAmount(total)}</span>
+        <section className="rounded-2xl bg-card border border-border overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-emerald-600/60 via-emerald-500/40 to-emerald-600/60" />
+          <div className="px-6 py-8 sm:py-10 text-center">
+            <p className="text-7xl sm:text-8xl font-extrabold text-primary tracking-tighter leading-none tabular-nums">
+              {bbDisplay}
+            </p>
+            <p className="text-sm text-muted-foreground mt-3 font-medium uppercase tracking-[0.2em]">
+              Big Blinds
+            </p>
           </div>
-        </div>
+          <div className="border-t border-border px-6 py-4 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Current amount: {formatChipAmount(total)} ({bbDisplay} BB)
+            </p>
+            <div className="flex items-center gap-3">
+              <Label className="text-sm text-muted-foreground whitespace-nowrap">
+                Big Blind (BB):
+              </Label>
+              <UnitInputSelect amount={currentBlindAmount} unit={currentBlindUnit} onChange={(v) => {
+                setCurrentBlindAmount(v.amount)
+                setCurrentBlindUnit(v.unit)
+              }} className="w-44" />
+            </div>
+          </div>
+        </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Chips</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {chips.map((chip) => {
-              const chipTotal = calculateUnitValue(chip.amount, chip.unit) * (chip.count ?? 0)
-              return (
-                <div key={chip.id} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
-                  <ChipIcon
-                    amount={chip.amount}
-                    unit={chip.unit}
-                    color={chip.color}
-                    onSave={({amount, unit, color}) => updateChip(chip.id, amount, unit, color)}
-                  />
+        <section className="space-y-3">
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em] px-1">
+            Chips
+          </h2>
+
+          {chips.map((chip) => {
+            const chipTotal = calculateUnitValue(chip.amount, chip.unit) * (chip.count ?? 0)
+            return (
+              <div key={chip.id} className="flex items-center gap-3 rounded-xl bg-card border border-border p-3">
+                <ChipIcon
+                  amount={chip.amount}
+                  unit={chip.unit}
+                  color={chip.color}
+                  onSave={({amount, unit, color}) => updateChip(chip.id, amount, unit, color)}
+                />
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Input
                     type="number"
                     inputMode="numeric"
                     value={chip.count ?? ""}
                     onChange={(e) => updateChipCount(chip.id, Number(e.currentTarget.value) || null)}
-                    className="text-lg"
+                    className="w-20 text-center"
                     placeholder="qty"
                   />
-                  <span className="text-muted-foreground">= {formatChipAmount(chipTotal)}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeChip(chip.id)}
-                    disabled={chips.length === 1}
-                    className="w-8 h-8 p-0"
-                    aria-label="Remove chip"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
+                  <span className="text-sm text-muted-foreground flex-1 text-right">= {formatChipAmount(chipTotal)}</span>
                 </div>
-              )
-            })}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeChip(chip.id)}
+                  disabled={chips.length === 1}
+                  className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                  aria-label="Remove chip"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )
+          })}
 
-            <Button variant="outline" onClick={addChip} className="mt-4 text-lg bg-transparent">
-              <Plus className="h-4 w-4 mr-2" />
-              add chip
-            </Button>
-          </CardContent>
-        </Card>
+          <Button
+            variant="ghost"
+            onClick={addChip}
+            className="w-full border border-dashed border-border rounded-xl h-11 text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            add chip
+          </Button>
+        </section>
 
-        <div className="mt-8 p-4 bg-muted rounded-lg">
-          <div className="text-center">
-            <p className="text-2xl font-bold">Total Stack: {formatChipAmount(total)}</p>
-            <p className="text-lg text-muted-foreground">({formatFullNumber(total)} chips)</p>
-            <p className="text-xl text-muted-foreground">({bbDisplay} Big Blinds)</p>
-          </div>
-        </div>
+        <section className="rounded-2xl bg-card border border-border p-5 text-center space-y-1">
+          <p className="text-xl font-bold">Total Stack: {formatChipAmount(total)}</p>
+          <p className="text-sm text-muted-foreground">({formatFullNumber(total)} chips)</p>
+          <p className="text-base text-muted-foreground">({bbDisplay} Big Blinds)</p>
+        </section>
       </div>
     </div>
   )

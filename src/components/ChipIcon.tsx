@@ -71,7 +71,7 @@ export default function ChipIcon({ amount, unit, color, onSave }: ChipIconProps)
     <Dialog open={isOpen} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
         <button
-          className={`relative w-16 h-16 rounded-full border-4 border-white shadow-lg hover:shadow-xl transition-shadow cursor-pointer flex items-center justify-center font-bold ${fontSize}`}
+          className={`relative w-14 h-14 rounded-full shadow-lg shadow-black/50 ring-2 ring-white/10 hover:ring-white/25 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center font-bold ${fontSize}`}
           style={{ backgroundColor: color, color: textColor }}
           title={`${formatFullNumber(calculateUnitValue(amount, unit))} chips`}
         >
@@ -90,7 +90,7 @@ export default function ChipIcon({ amount, unit, color, onSave }: ChipIconProps)
               setTempAmount(v.amount)
               setTempUnit(v.unit)
             }} className="mt-1" placeholder="100" />
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Display: {formatChipAmount(calculateUnitValue(tempAmount ?? 0, tempUnit))}
               {(tempAmount ?? 0) >= 1000 && ` (${formatFullNumber(calculateUnitValue(tempAmount ?? 0, tempUnit))})`}
             </p>
@@ -103,8 +103,8 @@ export default function ChipIcon({ amount, unit, color, onSave }: ChipIconProps)
                   key={chipColor.value}
                   aria-label={chipColor.name}
                   aria-pressed={tempColor === chipColor.value}
-                  className={`w-12 h-12 rounded-full border-2 ${
-                    tempColor === chipColor.value ? "border-gray-800" : "border-gray-300"
+                  className={`w-12 h-12 rounded-full ring-2 transition-all ${
+                    tempColor === chipColor.value ? "ring-primary ring-offset-2 ring-offset-popover" : "ring-border hover:ring-muted-foreground"
                   }`}
                   style={{ backgroundColor: chipColor.value }}
                   onClick={() => setTempColor(chipColor.value)}
