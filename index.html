@@ -1,11 +1,13 @@
 <!doctype html>
-<html lang="ja" class="dark">
+<html lang="ja">
 
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="theme-color" content="#09090b">
 	<meta name="description" content="ポーカーチップの枚数からスタック合計額とBB（ビッグブラインド）換算を即座に計算。キャッシュゲーム・トーナメント対応。Poker chip stack calculator with Big Blind conversion.">
 	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23e53e3e' stroke='%23fff' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Ctext x='50' y='58' text-anchor='middle' font-size='28' font-weight='bold' fill='%23fff'%3E$%3C/text%3E%3C/svg%3E">
+	<link rel="apple-touch-icon" href="/pwa-192x192.svg">
 	<title>Poker Chip Calculator - ポーカーチップスタック計算機</title>
 
 	<!-- OGP -->
@@ -38,6 +40,18 @@
 	}
 	</script>
 
+	<script>
+		// ちらつき防止: React のマウント前に localStorage のテーマ設定に基づいて dark クラスを適用する。
+		// useTheme フックのマウントを待つと一瞬ライトテーマが表示されてしまうため、
+		// インラインスクリプトで先行適用する。
+		(function() {
+			var theme = localStorage.getItem('theme');
+			var isDark = theme === 'dark' ||
+				(theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+			if (isDark) document.documentElement.classList.add('dark');
+			else document.documentElement.classList.remove('dark');
+		})();
+	</script>
 	<script type="module" src="/src/main.tsx"></script>
 	<link href="/src/style.css" rel="stylesheet">
 </head>

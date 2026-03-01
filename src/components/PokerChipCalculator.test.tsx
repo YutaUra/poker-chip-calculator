@@ -315,70 +315,69 @@ describe("PokerChipCalculator", () => {
     })
   })
 
-  describe("チップ枚数リセット", () => {
-    it("Reset ボタンが Chips セクションに表示される", () => {
+  describe("アンティ・M値統合", () => {
+    it("Ante ラベルが表示される", () => {
       render(<PokerChipCalculator />)
-      expect(screen.getByRole("button", { name: "Reset" })).toBeInTheDocument()
+      expect(screen.getByText("Ante:")).toBeInTheDocument()
     })
 
-    it("Reset ボタンをクリックすると全チップの枚数が 0 になる", () => {
+    it("Players ラベルが表示される", () => {
       render(<PokerChipCalculator />)
-
-      // 初期状態: 100チップ × 10枚
-      const counter = screen.getByLabelText("チップ枚数")
-      expect(counter).toHaveAttribute("aria-valuenow", "10")
-
-      // チップを追加して2行にする
-      fireEvent.click(screen.getByText("add chip"))
-      fireEvent.click(screen.getByText("Save"))
-
-      const counters = screen.getAllByLabelText("チップ枚数")
-      // 2行目を5枚に増やす
-      for (let i = 0; i < 5; i++) {
-        fireEvent.keyDown(counters[1]!, { key: "ArrowUp" })
-      }
-      expect(counters[1]).toHaveAttribute("aria-valuenow", "5")
-
-      // Reset をクリック
-      fireEvent.click(screen.getByRole("button", { name: "Reset" }))
-
-      // 全チップカウンターが 0 になる
-      const countersAfter = screen.getAllByLabelText("チップ枚数")
-      for (const c of countersAfter) {
-        expect(c).toHaveAttribute("aria-valuenow", "0")
-      }
+      expect(screen.getByText("Players:")).toBeInTheDocument()
     })
 
-    it("リセット後にチップの額面・色・並び順が維持される", () => {
+    it("初期状態ではM-Ratioが表示されない（アンティがデフォルト0のため）", () => {
       render(<PokerChipCalculator />)
-
-      // チップを追加して2行にする
-      fireEvent.click(screen.getByText("add chip"))
-      fireEvent.click(screen.getByText("Save"))
-
-      // リセット前のチップアイコン数を記録
-      const chipCountBefore = screen.getAllByLabelText("チップ枚数").length
-
-      // Reset をクリック
-      fireEvent.click(screen.getByRole("button", { name: "Reset" }))
-
-      // チップ行数が維持される
-      const chipCountAfter = screen.getAllByLabelText("チップ枚数").length
-      expect(chipCountAfter).toBe(chipCountBefore)
+      expect(screen.queryByText(/M-Ratio:/)).not.toBeInTheDocument()
     })
 
-    it("リセット後に Total Stack が 0 になる", () => {
+    it("アンティを入力するとM-Ratioが表示される", () => {
+      // sessionStorage にアンティ=10を設定
+      sessionStorage.setItem("current-ante-amount", JSON.stringify(10))
+      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
+      sessionStorage.setItem("current-players", JSON.stringify(9))
       render(<PokerChipCalculator />)
 
-      // 初期状態: Total Stack: 1K
-      expect(screen.getByText("Total Stack: 1K")).toBeInTheDocument()
+      // 初期: total=1000, BB=100, SB=50, ante=10, players=9
+      // M = 1000 / (50 + 100 + 10 × 9) = 1000 / 240 ≈ 4.2
+      expect(screen.getByText(/M-Ratio:/)).toBeInTheDocument()
+    })
 
-      // Reset をクリック
-      fireEvent.click(screen.getByRole("button", { name: "Reset" }))
+    it("M値が小数の場合は小数第1位まで表示する", () => {
+      sessionStorage.setItem("current-ante-amount", JSON.stringify(10))
+      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
+      sessionStorage.setItem("current-players", JSON.stringify(9))
+      render(<PokerChipCalculator />)
 
-      // Total Stack が 0 になる
-      expect(screen.getByText("Total Stack: 0")).toBeInTheDocument()
-      expect(screen.getByText("(0 chips)")).toBeInTheDocument()
+      // M = 1000 / 240 ≈ 4.166... → "4.2"
+      expect(screen.getByText("4.2")).toBeInTheDocument()
+    })
+
+    it("M値のゾーン色が適用される（red: M < 5）", () => {
+      sessionStorage.setItem("current-ante-amount", JSON.stringify(10))
+      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
+      sessionStorage.setItem("current-players", JSON.stringify(9))
+      render(<PokerChipCalculator />)
+
+      // M ≈ 4.2 → red zone
+      const mValueSpan = screen.getByText("4.2")
+      expect(mValueSpan).toHaveClass("text-red-500")
+    })
+
+    it("プレイヤー人数のデフォルト値が9である", () => {
+      render(<PokerChipCalculator />)
+      const playersInput = screen.getByLabelText("Players:")
+      expect(playersInput).toHaveValue(9)
+    })
+
+    it("sessionStorage からアンティとプレイヤー人数を復元する", () => {
+      sessionStorage.setItem("current-ante-amount", JSON.stringify(25))
+      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
+      sessionStorage.setItem("current-players", JSON.stringify(6))
+      render(<PokerChipCalculator />)
+
+      const playersInput = screen.getByLabelText("Players:")
+      expect(playersInput).toHaveValue(6)
     })
   })
 

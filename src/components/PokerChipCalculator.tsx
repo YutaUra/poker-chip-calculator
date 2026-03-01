@@ -1,10 +1,16 @@
+import { useMemo } from "react"
 import { formatChipAmount, formatFullNumber } from "@/lib/format-numbers"
+import { calculateMRatio, getMZone } from "@/lib/m-ratio"
+import type { MZone } from "@/lib/m-ratio"
+import { useAnte } from "@/lib/use-ante"
 import { useBlind } from "@/lib/use-blind"
 import { useCalculatedValues } from "@/lib/use-calculated-values"
 import { useChips } from "@/lib/use-chips"
 import { usePresets } from "@/lib/use-presets"
 import { useStackSession } from "@/lib/use-stack-session"
 import { useTutorial } from "@/lib/use-tutorial"
+import { calculateUnitValue } from "@/lib/units"
+import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import AppHeader from "./AppHeader"
 import ChipListSection from "./ChipListSection"
@@ -13,12 +19,38 @@ import StackRecordSection from "./StackRecordSection"
 import TutorialOverlay from "./TutorialOverlay"
 import UnitInputSelect from "./UnitInputSelect"
 
+const ZONE_COLOR_CLASS: Record<MZone, string> = {
+  green: "text-green-500",
+  yellow: "text-yellow-500",
+  orange: "text-orange-500",
+  red: "text-red-500",
+}
+
 export default function PokerChipCalculator() {
   const blind = useBlind()
+  const ante = useAnte()
   const chipActions = useChips()
   const { total, bbValue, bbDisplay } = useCalculatedValues(chipActions.chips, blind.amount, blind.unit)
   const stackSession = useStackSession()
   const tutorial = useTutorial()
+
+  const anteEffective = ante.anteAmount !== null ? calculateUnitValue(ante.anteAmount, ante.anteUnit) : 0
+  const bbEffective = blind.amount !== null ? calculateUnitValue(blind.amount, blind.unit) : 0
+
+  const mRatio = useMemo(() => {
+    if (anteEffective === 0) return null
+    return calculateMRatio({
+      totalStack: total,
+      bbAmount: bbEffective,
+      anteAmount: anteEffective,
+      players: ante.players,
+    })
+  }, [total, bbEffective, anteEffective, ante.players])
+
+  const mZone = mRatio !== null ? getMZone(mRatio) : null
+  const mDisplay = mRatio !== null
+    ? (mRatio % 1 === 0 ? mRatio.toString() : mRatio.toFixed(1))
+    : null
   const presets = usePresets({
     chips: chipActions.chips,
     blindAmount: blind.amount,
@@ -59,6 +91,33 @@ export default function PokerChipCalculator() {
                 blind.setUnit(v.unit)
               }} className="w-44" />
             </div>
+            <div className="flex items-center gap-3">
+              <Label className="text-sm text-muted-foreground whitespace-nowrap">
+                Ante:
+              </Label>
+              <UnitInputSelect amount={ante.anteAmount} unit={ante.anteUnit} onChange={(v) => {
+                ante.setAnteAmount(v.amount)
+                ante.setAnteUnit(v.unit)
+              }} className="w-44" placeholder="0" />
+            </div>
+            <div className="flex items-center gap-3">
+              <Label htmlFor="players-input" className="text-sm text-muted-foreground whitespace-nowrap">
+                Players:
+              </Label>
+              <Input
+                id="players-input"
+                type="number"
+                inputMode="numeric"
+                value={ante.players}
+                onChange={(e) => {
+                  const v = Number(e.currentTarget.value)
+                  if (v >= 2 && v <= 10) ante.setPlayers(v)
+                }}
+                min={2}
+                max={10}
+                className="w-20"
+              />
+            </div>
           </div>
         </section>
 
@@ -68,7 +127,6 @@ export default function PokerChipCalculator() {
           updateChipCount={chipActions.updateChipCount}
           addChip={chipActions.addChip}
           removeChip={chipActions.removeChip}
-          onResetCounts={chipActions.resetCounts}
           onOpenPresets={() => presets.setDialogOpen(true)}
         />
 
@@ -88,6 +146,11 @@ export default function PokerChipCalculator() {
           <p className="text-xl font-bold">Total Stack: {formatChipAmount(total)}</p>
           <p className="text-sm text-muted-foreground">({formatFullNumber(total)} chips)</p>
           <p className="text-base text-muted-foreground">({bbDisplay} Big Blinds)</p>
+          {mDisplay !== null && mZone !== null && (
+            <p className="text-base">
+              M-Ratio: <span className={ZONE_COLOR_CLASS[mZone]}>{mDisplay}</span>
+            </p>
+          )}
         </section>
 
         <TutorialOverlay

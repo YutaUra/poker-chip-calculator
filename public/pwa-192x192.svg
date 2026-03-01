@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Background -->
+  <rect width="192" height="192" rx="24" fill="#09090b"/>
+  <!-- Chip outer -->
+  <circle cx="96" cy="96" r="72" fill="#e53e3e" stroke="#fff" stroke-width="6"/>
+  <!-- Edge notches (casino chip style) -->
+  <g stroke="#fff" stroke-width="6" stroke-linecap="round">
+    <line x1="96" y1="18" x2="96" y2="30"/>
+    <line x1="96" y1="162" x2="96" y2="174"/>
+    <line x1="18" y1="96" x2="30" y2="96"/>
+    <line x1="162" y1="96" x2="174" y2="96"/>
+    <line x1="40.8" y1="40.8" x2="49.3" y2="49.3"/>
+    <line x1="142.7" y1="142.7" x2="151.2" y2="151.2"/>
+    <line x1="40.8" y1="151.2" x2="49.3" y2="142.7"/>
+    <line x1="142.7" y1="49.3" x2="151.2" y2="40.8"/>
+  </g>
+  <!-- Inner ring -->
+  <circle cx="96" cy="96" r="48" fill="none" stroke="#fff" stroke-width="4"/>
+  <!-- Dollar sign -->
+  <text x="96" y="108" text-anchor="middle" font-size="48" font-weight="bold" fill="#fff" font-family="Arial, sans-serif">$</text>
+</svg>
