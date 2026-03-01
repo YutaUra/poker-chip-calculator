@@ -127,7 +127,7 @@ export default function PresetDialog({
         <div className="flex-1 overflow-y-auto -mx-6 px-6 space-y-4">
           <div>
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-[0.15em] mb-2">
-              System
+              Built-in
             </h3>
             <div className="space-y-0.5">
               {SYSTEM_PRESETS.map((preset) => (

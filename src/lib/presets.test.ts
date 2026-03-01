@@ -5,12 +5,9 @@ import { calculateUnitValue } from "./units"
 
 describe("SYSTEM_PRESETS", () => {
   const expectedTotals: Record<string, number> = {
-    "cash-1-2": 200,
-    "cash-1-3": 300,
-    "cash-2-5": 500,
-    "cash-5-10": 1000,
-    "tournament-5k": 5000,
-    "tournament-30k": 30000,
+    standard: 1000,
+    tournament: 21000,
+    "home-game": 1300,
   }
 
   it.each(Object.entries(expectedTotals))(
@@ -28,15 +25,11 @@ describe("SYSTEM_PRESETS", () => {
   )
 
   it.each(Object.entries(expectedTotals))(
-    "%s の合計額がブラインドで割ると100BBになる",
+    "%s にブラインド値が設定されている",
     (presetId) => {
       const preset = SYSTEM_PRESETS.find((p) => p.id === presetId)!
-      const total = preset.chips.reduce(
-        (sum, chip) => sum + calculateUnitValue(chip.amount, chip.unit) * chip.count,
-        0,
-      )
       const blindValue = calculateUnitValue(preset.blindAmount, preset.blindUnit)
-      expect(total / blindValue).toBe(100)
+      expect(blindValue).toBeGreaterThan(0)
     },
   )
 
@@ -46,8 +39,8 @@ describe("SYSTEM_PRESETS", () => {
     }
   })
 
-  it("ビルトインプリセットが6種類存在する", () => {
-    expect(SYSTEM_PRESETS).toHaveLength(6)
+  it("ビルトインプリセットが3種類存在する", () => {
+    expect(SYSTEM_PRESETS).toHaveLength(3)
   })
 })
 

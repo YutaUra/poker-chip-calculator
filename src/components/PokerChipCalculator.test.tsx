@@ -315,6 +315,73 @@ describe("PokerChipCalculator", () => {
     })
   })
 
+  describe("チップ枚数リセット", () => {
+    it("Reset ボタンが Chips セクションに表示される", () => {
+      render(<PokerChipCalculator />)
+      expect(screen.getByRole("button", { name: "Reset" })).toBeInTheDocument()
+    })
+
+    it("Reset ボタンをクリックすると全チップの枚数が 0 になる", () => {
+      render(<PokerChipCalculator />)
+
+      // 初期状態: 100チップ × 10枚
+      const counter = screen.getByLabelText("チップ枚数")
+      expect(counter).toHaveAttribute("aria-valuenow", "10")
+
+      // チップを追加して2行にする
+      fireEvent.click(screen.getByText("add chip"))
+      fireEvent.click(screen.getByText("Save"))
+
+      const counters = screen.getAllByLabelText("チップ枚数")
+      // 2行目を5枚に増やす
+      for (let i = 0; i < 5; i++) {
+        fireEvent.keyDown(counters[1]!, { key: "ArrowUp" })
+      }
+      expect(counters[1]).toHaveAttribute("aria-valuenow", "5")
+
+      // Reset をクリック
+      fireEvent.click(screen.getByRole("button", { name: "Reset" }))
+
+      // 全チップカウンターが 0 になる
+      const countersAfter = screen.getAllByLabelText("チップ枚数")
+      for (const c of countersAfter) {
+        expect(c).toHaveAttribute("aria-valuenow", "0")
+      }
+    })
+
+    it("リセット後にチップの額面・色・並び順が維持される", () => {
+      render(<PokerChipCalculator />)
+
+      // チップを追加して2行にする
+      fireEvent.click(screen.getByText("add chip"))
+      fireEvent.click(screen.getByText("Save"))
+
+      // リセット前のチップアイコン数を記録
+      const chipCountBefore = screen.getAllByLabelText("チップ枚数").length
+
+      // Reset をクリック
+      fireEvent.click(screen.getByRole("button", { name: "Reset" }))
+
+      // チップ行数が維持される
+      const chipCountAfter = screen.getAllByLabelText("チップ枚数").length
+      expect(chipCountAfter).toBe(chipCountBefore)
+    })
+
+    it("リセット後に Total Stack が 0 になる", () => {
+      render(<PokerChipCalculator />)
+
+      // 初期状態: Total Stack: 1K
+      expect(screen.getByText("Total Stack: 1K")).toBeInTheDocument()
+
+      // Reset をクリック
+      fireEvent.click(screen.getByRole("button", { name: "Reset" }))
+
+      // Total Stack が 0 になる
+      expect(screen.getByText("Total Stack: 0")).toBeInTheDocument()
+      expect(screen.getByText("(0 chips)")).toBeInTheDocument()
+    })
+  })
+
   describe("ScrollableCounter 統合", () => {
     it("チップ枚数の入力に ScrollableCounter が使用されている", () => {
       render(<PokerChipCalculator />)

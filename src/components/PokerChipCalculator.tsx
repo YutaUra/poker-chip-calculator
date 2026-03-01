@@ -68,6 +68,7 @@ export default function PokerChipCalculator() {
           updateChipCount={chipActions.updateChipCount}
           addChip={chipActions.addChip}
           removeChip={chipActions.removeChip}
+          onResetCounts={chipActions.resetCounts}
           onOpenPresets={() => presets.setDialogOpen(true)}
         />
 

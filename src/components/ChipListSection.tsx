@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Minus, Plus, ListChecks } from "lucide-react"
+import { Minus, Plus, ListChecks, RotateCcw } from "lucide-react"
 import { calculateUnitValue } from "@/lib/units"
 import type { Unit } from "@/lib/units"
 import { formatChipAmount } from "@/lib/format-numbers"
@@ -22,6 +22,7 @@ interface ChipListSectionProps {
   updateChipCount: (id: number, value: number | null) => void
   addChip: (amount: number, unit: Unit, color: string) => void
   removeChip: (id: number) => void
+  onResetCounts: () => void
   onOpenPresets: () => void
 }
 
@@ -31,6 +32,7 @@ export default function ChipListSection({
   updateChipCount,
   addChip,
   removeChip,
+  onResetCounts,
   onOpenPresets,
 }: ChipListSectionProps) {
   const [showAddChipDialog, setShowAddChipDialog] = useState(false)
@@ -56,15 +58,26 @@ export default function ChipListSection({
         <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">
           Chips
         </h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onOpenPresets}
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ListChecks className="h-3.5 w-3.5 mr-1" />
-          Presets
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onResetCounts}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <RotateCcw className="h-3.5 w-3.5 mr-1" />
+            Reset
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onOpenPresets}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ListChecks className="h-3.5 w-3.5 mr-1" />
+            Presets
+          </Button>
+        </div>
       </div>
 
       {chips.map((chip, index) => {
