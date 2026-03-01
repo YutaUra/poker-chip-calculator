@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import {
   createSnapshot,
   addSnapshot,
@@ -6,6 +6,7 @@ import {
   updateSnapshotMemo,
   createSession,
   resetSession,
+  generateUUID,
 } from "./stack-history"
 import type { Session, StackSnapshot } from "./stack-history"
 
@@ -248,6 +249,43 @@ describe("createSession", () => {
 
     expect(session.startedAt).toBeGreaterThanOrEqual(before)
     expect(session.startedAt).toBeLessThanOrEqual(after)
+  })
+})
+
+describe("generateUUID", () => {
+  it("crypto.randomUUIDが利用可能な場合はそれを使う", () => {
+    const result = generateUUID()
+
+    // beforeEach のモックにより "test-uuid-N" が返る
+    expect(result).toMatch(/^test-uuid-\d+$/)
+  })
+
+  it("crypto.randomUUIDが存在しない場合でもUUID形式の文字列を返す", () => {
+    const original = crypto.randomUUID
+    // randomUUID を undefined に差し替え
+    Object.defineProperty(crypto, "randomUUID", { value: undefined, configurable: true })
+
+    try {
+      const result = generateUUID()
+
+      // UUID v4 形式: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
+      expect(result).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+    } finally {
+      Object.defineProperty(crypto, "randomUUID", { value: original, configurable: true })
+    }
+  })
+
+  it("フォールバックで生成されるUUIDは毎回異なる", () => {
+    const original = crypto.randomUUID
+    Object.defineProperty(crypto, "randomUUID", { value: undefined, configurable: true })
+
+    try {
+      const ids = new Set(Array.from({ length: 10 }, () => generateUUID()))
+
+      expect(ids.size).toBe(10)
+    } finally {
+      Object.defineProperty(crypto, "randomUUID", { value: original, configurable: true })
+    }
   })
 })
 
