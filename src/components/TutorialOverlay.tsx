@@ -3,6 +3,7 @@ import clsx from "clsx"
 import { X } from "lucide-react"
 import { Button } from "./ui/button"
 import type { TutorialStep } from "@/lib/tutorial"
+import { useFocusTrap } from "@/lib/use-focus-trap"
 
 interface TutorialOverlayProps {
   active: boolean
@@ -111,6 +112,8 @@ export default function TutorialOverlay({
       document.body.style.overflow = ""
     }
   }, [active])
+
+  useFocusTrap(popoverRef, active)
 
   useEffect(() => {
     if (!active) return

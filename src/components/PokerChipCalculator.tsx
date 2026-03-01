@@ -6,6 +6,8 @@ import { useAnte } from "@/lib/use-ante"
 import { useBlind } from "@/lib/use-blind"
 import { useCalculatedValues } from "@/lib/use-calculated-values"
 import { useChips } from "@/lib/use-chips"
+import { useEffectiveStack } from "@/lib/use-effective-stack"
+import { usePotOdds } from "@/lib/use-pot-odds"
 import { usePresets } from "@/lib/use-presets"
 import { useStackSession } from "@/lib/use-stack-session"
 import { useTutorial } from "@/lib/use-tutorial"
@@ -14,6 +16,8 @@ import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import AppHeader from "./AppHeader"
 import ChipListSection from "./ChipListSection"
+import EffectiveStackSection from "./EffectiveStackSection"
+import PotOddsSection from "./PotOddsSection"
 import PresetDialog from "./PresetDialog"
 import StackRecordSection from "./StackRecordSection"
 import TutorialOverlay from "./TutorialOverlay"
@@ -31,6 +35,8 @@ export default function PokerChipCalculator() {
   const ante = useAnte()
   const chipActions = useChips()
   const { total, bbValue, bbDisplay } = useCalculatedValues(chipActions.chips, blind.amount, blind.unit)
+  const effectiveStack = useEffectiveStack(bbValue)
+  const potOdds = usePotOdds()
   const stackSession = useStackSession()
   const tutorial = useTutorial()
 
@@ -63,7 +69,7 @@ export default function PokerChipCalculator() {
   })
 
   return (
-    <div className="min-h-screen p-4 sm:p-8">
+    <div id="main-content" className="min-h-screen p-4 sm:p-8">
       <div className="max-w-lg mx-auto space-y-6">
 
         <AppHeader onStartTutorial={tutorial.start} />
@@ -152,6 +158,25 @@ export default function PokerChipCalculator() {
             </p>
           )}
         </section>
+
+        <EffectiveStackSection
+          enabled={effectiveStack.enabled}
+          opponentBB={effectiveStack.opponentBB}
+          effectiveDisplay={effectiveStack.effectiveDisplay}
+          onToggle={effectiveStack.toggleEnabled}
+          onOpponentBBChange={effectiveStack.setOpponentBB}
+        />
+
+        <PotOddsSection
+          enabled={potOdds.enabled}
+          potSize={potOdds.potSize}
+          callAmount={potOdds.callAmount}
+          formattedPotOdds={potOdds.formattedPotOdds}
+          formattedEquity={potOdds.formattedEquity}
+          onToggle={potOdds.toggleEnabled}
+          onPotSizeChange={potOdds.setPotSize}
+          onCallAmountChange={potOdds.setCallAmount}
+        />
 
         <TutorialOverlay
           active={tutorial.active}

@@ -44,6 +44,28 @@ describe("ChipIcon", () => {
     })
   })
 
+  describe("aria-label", () => {
+    it("赤チップに「チップ: 100, 赤」のaria-labelが設定される", () => {
+      render(<ChipIcon {...defaultProps} />)
+      expect(screen.getByLabelText("チップ: 100, 赤")).toBeInTheDocument()
+    })
+
+    it("青チップに色名「青」が含まれるaria-labelが設定される", () => {
+      render(<ChipIcon {...defaultProps} color="#3b82f6" />)
+      expect(screen.getByLabelText("チップ: 100, 青")).toBeInTheDocument()
+    })
+
+    it("K単位チップのaria-labelに短縮額面が含まれる", () => {
+      render(<ChipIcon {...defaultProps} amount={5} unit="K" />)
+      expect(screen.getByLabelText("チップ: 5K, 赤")).toBeInTheDocument()
+    })
+
+    it("未知のカスタム色のaria-labelに「カスタム」が含まれる", () => {
+      render(<ChipIcon {...defaultProps} color="#abcdef" />)
+      expect(screen.getByLabelText("チップ: 100, カスタム")).toBeInTheDocument()
+    })
+  })
+
   describe("テキストコントラスト", () => {
     it("暗い背景色のチップは白文字で表示される", () => {
       render(<ChipIcon {...defaultProps} color="#ef4444" />)
@@ -115,7 +137,7 @@ describe("ChipIcon", () => {
       expect(screen.getByText("Color")).toBeInTheDocument()
     })
 
-    it("ダイアログ内に9色のカラーボタンと+ボタンが表示される", () => {
+    it("ダイアログ内に9色のカラーボタンが表示される", () => {
       render(<ChipIcon {...defaultProps} />)
       fireEvent.click(screen.getByTitle("100 chips"))
 
@@ -123,10 +145,6 @@ describe("ChipIcon", () => {
       for (const name of colorNames) {
         expect(screen.getByLabelText(name)).toBeInTheDocument()
       }
-      // Gray は除外されている
-      expect(screen.queryByLabelText("Gray")).not.toBeInTheDocument()
-      // +ボタンが存在する
-      expect(screen.getByLabelText("もっと色を見る")).toBeInTheDocument()
     })
 
     it("カラーボタンに aria-pressed が設定される", () => {
@@ -191,44 +209,6 @@ describe("ChipIcon", () => {
       fireEvent.click(screen.getByTitle("100 chips"))
 
       expect(screen.getByText(/Display: 100/)).toBeInTheDocument()
-    })
-  })
-
-  describe("拡張カラーピッカー", () => {
-    it("+ボタンをクリックすると拡張カラーピッカーが展開される", () => {
-      render(<ChipIcon {...defaultProps} />)
-      fireEvent.click(screen.getByTitle("100 chips"))
-
-      // 初期状態では拡張ピッカーは非表示
-      expect(screen.queryByTestId("color-preview")).not.toBeInTheDocument()
-
-      // +ボタンをクリック
-      fireEvent.click(screen.getByLabelText("もっと色を見る"))
-
-      // 拡張ピッカーが表示される
-      expect(screen.getByTestId("color-preview")).toBeInTheDocument()
-    })
-
-    it("+ボタンを再度クリックすると拡張ピッカーが折りたたまれる", () => {
-      render(<ChipIcon {...defaultProps} />)
-      fireEvent.click(screen.getByTitle("100 chips"))
-
-      // 展開
-      fireEvent.click(screen.getByLabelText("もっと色を見る"))
-      expect(screen.getByTestId("color-preview")).toBeInTheDocument()
-
-      // 折りたたみ
-      fireEvent.click(screen.getByLabelText("もっと色を見る"))
-      expect(screen.queryByTestId("color-preview")).not.toBeInTheDocument()
-    })
-
-    it("拡張ピッカーで選択した色がプリセットに含まれる場合はそのボタンが選択状態になる", () => {
-      const onSave = vi.fn()
-      render(<ChipIcon {...defaultProps} onSave={onSave} color="#3b82f6" />)
-      fireEvent.click(screen.getByTitle("100 chips"))
-
-      // Blue (#3b82f6) はプリセットに含まれるので aria-pressed="true"
-      expect(screen.getByLabelText("Blue")).toHaveAttribute("aria-pressed", "true")
     })
   })
 })

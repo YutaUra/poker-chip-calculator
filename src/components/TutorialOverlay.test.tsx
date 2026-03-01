@@ -159,4 +159,48 @@ describe("TutorialOverlay", () => {
     expect(defaultProps.onSkip).not.toHaveBeenCalled()
     expect(defaultProps.onNext).not.toHaveBeenCalled()
   })
+
+  describe("フォーカストラップ", () => {
+    it("ダイアログ表示時にポップオーバー内のボタンにフォーカスが移る", () => {
+      render(<TutorialOverlay {...defaultProps} />)
+
+      const dialog = screen.getByRole("dialog")
+      const focusableElements = dialog.querySelectorAll("button")
+      const activeEl = document.activeElement
+
+      // ポップオーバー内のいずれかのボタンにフォーカスが当たっている
+      const isFocusInsideDialog = Array.from(focusableElements).some(
+        (el) => el === activeEl,
+      )
+      expect(isFocusInsideDialog).toBe(true)
+    })
+
+    it("最後のボタンで Tab を押すと最初のボタンにフォーカスが戻る", () => {
+      render(<TutorialOverlay {...defaultProps} />)
+
+      const dialog = screen.getByRole("dialog")
+      const focusableElements = dialog.querySelectorAll("button")
+      const lastButton = focusableElements[focusableElements.length - 1]!
+      const firstButton = focusableElements[0]!
+
+      lastButton.focus()
+      fireEvent.keyDown(document, { key: "Tab" })
+
+      expect(document.activeElement).toBe(firstButton)
+    })
+
+    it("最初のボタンで Shift+Tab を押すと最後のボタンにフォーカスが移る", () => {
+      render(<TutorialOverlay {...defaultProps} />)
+
+      const dialog = screen.getByRole("dialog")
+      const focusableElements = dialog.querySelectorAll("button")
+      const firstButton = focusableElements[0]!
+      const lastButton = focusableElements[focusableElements.length - 1]!
+
+      firstButton.focus()
+      fireEvent.keyDown(document, { key: "Tab", shiftKey: true })
+
+      expect(document.activeElement).toBe(lastButton)
+    })
+  })
 })

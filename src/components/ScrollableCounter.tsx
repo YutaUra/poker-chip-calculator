@@ -196,7 +196,7 @@ export default function ScrollableCounter({
       aria-label="チップ枚数"
       tabIndex={0}
       className={cn(
-        "relative select-none touch-none cursor-ns-resize overflow-hidden rounded-lg w-16",
+        "relative select-none touch-none cursor-ns-resize overflow-hidden rounded-lg w-16 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className,
       )}
       style={{ height: ITEM_HEIGHT * 3 }}
@@ -216,7 +216,7 @@ export default function ScrollableCounter({
       {/* 数値表示 */}
       <div className="relative z-[1]">
         <div
-          className="flex items-center justify-center text-xs text-muted-foreground/40 tabular-nums"
+          className="flex items-center justify-center text-xs text-muted-foreground/60 tabular-nums"
           style={{ height: ITEM_HEIGHT }}
         >
           {prev >= min && <span>{prev}</span>}
@@ -234,7 +234,7 @@ export default function ScrollableCounter({
           </span>
         </div>
         <div
-          className="flex items-center justify-center text-xs text-muted-foreground/40 tabular-nums"
+          className="flex items-center justify-center text-xs text-muted-foreground/60 tabular-nums"
           style={{ height: ITEM_HEIGHT }}
         >
           {next <= max && <span>{next}</span>}
