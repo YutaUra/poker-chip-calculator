@@ -71,6 +71,7 @@ export default function ScrollableCounter({
   const rafIdRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
   const lastTimeRef = useRef(0);
+  const cleanupDragRef = useRef<(() => void) | null>(null);
 
   const tick = useCallback(() => {
     if (!isDraggingRef.current) return;
@@ -101,40 +102,55 @@ export default function ScrollableCounter({
     rafIdRef.current = requestAnimationFrame(tick);
   }, []);
 
+  const stopDragging = useCallback(() => {
+    isDraggingRef.current = false;
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    cleanupDragRef.current?.();
+    cleanupDragRef.current = null;
+  }, []);
+
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
+      // 前回のドラッグが残っていたらクリーンアップ
+      stopDragging();
+
       originYRef.current = e.clientY;
       currentYRef.current = e.clientY;
       accumulatorRef.current = 0;
       isDraggingRef.current = true;
       lastTimeRef.current = performance.now();
       rafIdRef.current = requestAnimationFrame(tick);
+
+      // ポインタがコンポーネント外で離された場合もキャッチするため、
+      // window レベルでリスナーを登録する。
+      // React の onPointerUp は要素上でしか発火しないため不十分。
+      const onWindowPointerMove = (ev: PointerEvent) => {
+        currentYRef.current = ev.clientY;
+      };
+      const onWindowPointerUp = () => {
+        stopDragging();
+      };
+
+      window.addEventListener("pointermove", onWindowPointerMove);
+      window.addEventListener("pointerup", onWindowPointerUp);
+
+      cleanupDragRef.current = () => {
+        window.removeEventListener("pointermove", onWindowPointerMove);
+        window.removeEventListener("pointerup", onWindowPointerUp);
+      };
     },
-    [tick],
+    [tick, stopDragging],
   );
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDraggingRef.current) return;
-    currentYRef.current = e.clientY;
-  }, []);
-
-  const handlePointerUp = useCallback(() => {
-    isDraggingRef.current = false;
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
-    }
-  }, []);
 
   // コンポーネントアンマウント時にクリーンアップ
   useEffect(() => {
     return () => {
-      isDraggingRef.current = false;
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
+      stopDragging();
     };
-  }, []);
+  }, [stopDragging]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowUp" && value < max) {
@@ -186,8 +202,6 @@ export default function ScrollableCounter({
       style={{ height: ITEM_HEIGHT * 3 }}
       onKeyDown={handleKeyDown}
       onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
       {...restProps}
     >
       {/* グラデーションオーバーレイ（上） */}

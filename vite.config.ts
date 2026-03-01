@@ -7,6 +7,11 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [cloudflare(), react(), tailwindcss()],
+  server: {
+    watch: {
+      ignored: ["**/openspec/**"],
+    },
+  },
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),

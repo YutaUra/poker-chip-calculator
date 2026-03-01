@@ -328,6 +328,32 @@ describe("ScrollableCounter", () => {
       expect(onChange.mock.calls.length).toBe(callCountBeforeUp)
     })
 
+    it("コンポーネント外でポインタを離した場合も値の変化が停止する", () => {
+      const onChange = vi.fn()
+      render(
+        <ScrollableCounter {...defaultProps} value={5} onChange={onChange} />,
+      )
+
+      const spinbutton = screen.getByRole("spinbutton")
+
+      // Arrange: pointerdown → pointermove で値変化を開始
+      fireEvent.pointerDown(spinbutton, { clientY: 200 })
+      fireEvent.pointerMove(spinbutton, { clientY: 120 })
+      advanceTimeAndFlush(300, 3)
+
+      const callCountBeforeUp = onChange.mock.calls.length
+      expect(callCountBeforeUp).toBeGreaterThan(0)
+
+      // Act: コンポーネント「外」で pointerup（window レベル）
+      window.dispatchEvent(new Event("pointerup"))
+
+      // さらに時間を進める
+      advanceTimeAndFlush(1000, 10)
+
+      // Assert: pointerup 後は onChange がそれ以上呼ばれない
+      expect(onChange.mock.calls.length).toBe(callCountBeforeUp)
+    })
+
     it("value=0で減少方向に操作しても0未満にならない", () => {
       const onChange = vi.fn()
       render(
