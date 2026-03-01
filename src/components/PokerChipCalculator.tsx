@@ -12,6 +12,7 @@ import type { Session, StackSnapshot } from "@/lib/stack-history"
 import { Minus, Plus, BarChart3, Undo2, RotateCcw } from "lucide-react"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
+import ChipEditForm from "./ChipEditForm"
 import ChipIcon from "./ChipIcon"
 import ScrollableCounter from "./ScrollableCounter"
 import StackGraph from "./StackGraph"
@@ -40,6 +41,10 @@ export default function PokerChipCalculator() {
   const [memoInput, setMemoInput] = useState("")
   const [editingSnapshot, setEditingSnapshot] = useState<StackSnapshot | null>(null)
   const [editingMemo, setEditingMemo] = useState("")
+  const [showAddChipDialog, setShowAddChipDialog] = useState(false)
+  const [addChipAmount, setAddChipAmount] = useState<number | null>(100)
+  const [addChipUnit, setAddChipUnit] = useState<Unit>("1")
+  const [addChipColor, setAddChipColor] = useState("#ef4444")
   const nextIdRef = useRef(Math.max(0, ...chips.map(c => c.id)) + 1)
 
   const updateChip = (id: number, amount: number, unit: Unit, color: string) => {
@@ -50,10 +55,22 @@ export default function PokerChipCalculator() {
     setChips((prevChips) => prevChips.map((chip) => (chip.id === id ? { ...chip, count: value } : chip)))
   }
 
-  const addChip = () => {
+  const openAddChipDialog = () => {
+    setAddChipAmount(100)
+    setAddChipUnit("1")
+    setAddChipColor("#ef4444")
+    setShowAddChipDialog(true)
+  }
+
+  const handleAddChipSave = () => {
     const id = nextIdRef.current
     nextIdRef.current += 1
-    setChips(prev => [...prev, { id, amount: 1, unit: "1" as Unit, count: 0, color: "#6b7280" }])
+    setChips(prev => sortChipsByValue([...prev, { id, amount: addChipAmount ?? 0, unit: addChipUnit, count: 0, color: addChipColor }]))
+    setShowAddChipDialog(false)
+  }
+
+  const handleAddChipCancel = () => {
+    setShowAddChipDialog(false)
   }
 
   const removeChip = (id: number) => {
@@ -179,7 +196,7 @@ export default function PokerChipCalculator() {
 
           <Button
             variant="ghost"
-            onClick={addChip}
+            onClick={openAddChipDialog}
             className="w-full border border-dashed border-border rounded-xl h-11 text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -265,6 +282,25 @@ export default function PokerChipCalculator() {
                 リセットする
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showAddChipDialog} onOpenChange={setShowAddChipDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Chip</DialogTitle>
+              <DialogDescription>Set chip amount and color</DialogDescription>
+            </DialogHeader>
+            <ChipEditForm
+              amount={addChipAmount}
+              unit={addChipUnit}
+              color={addChipColor}
+              onAmountChange={setAddChipAmount}
+              onUnitChange={setAddChipUnit}
+              onColorChange={setAddChipColor}
+              onSave={handleAddChipSave}
+              onCancel={handleAddChipCancel}
+            />
           </DialogContent>
         </Dialog>
 

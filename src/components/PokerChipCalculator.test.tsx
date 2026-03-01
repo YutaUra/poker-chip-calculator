@@ -65,22 +65,55 @@ describe("PokerChipCalculator", () => {
   })
 
   describe("チップ追加", () => {
-    it("add chip ボタンでチップ行が追加される", () => {
+    it("add chip ボタンでダイアログが表示される", () => {
+      render(<PokerChipCalculator />)
+
+      fireEvent.click(screen.getByText("add chip"))
+
+      expect(screen.getByText("Add Chip")).toBeInTheDocument()
+      expect(screen.getByText("Amount")).toBeInTheDocument()
+      expect(screen.getByText("Color")).toBeInTheDocument()
+    })
+
+    it("ダイアログのデフォルト値が amount:100, color:Red", () => {
+      render(<PokerChipCalculator />)
+
+      fireEvent.click(screen.getByText("add chip"))
+
+      expect(screen.getByLabelText("Red")).toHaveAttribute("aria-pressed", "true")
+    })
+
+    it("ダイアログで Save するとチップ行が追加される", () => {
       render(<PokerChipCalculator />)
 
       const countInputsBefore = screen.getAllByLabelText("チップ枚数")
       const initialCount = countInputsBefore.length
 
       fireEvent.click(screen.getByText("add chip"))
+      fireEvent.click(screen.getByText("Save"))
 
       const countInputsAfter = screen.getAllByLabelText("チップ枚数")
       expect(countInputsAfter.length).toBe(initialCount + 1)
+    })
+
+    it("ダイアログで Cancel するとチップは追加されない", () => {
+      render(<PokerChipCalculator />)
+
+      const countInputsBefore = screen.getAllByLabelText("チップ枚数")
+      const initialCount = countInputsBefore.length
+
+      fireEvent.click(screen.getByText("add chip"))
+      fireEvent.click(screen.getByText("Cancel"))
+
+      const countInputsAfter = screen.getAllByLabelText("チップ枚数")
+      expect(countInputsAfter.length).toBe(initialCount)
     })
 
     it("追加されたチップは count=0 で Total に影響しない", () => {
       render(<PokerChipCalculator />)
 
       fireEvent.click(screen.getByText("add chip"))
+      fireEvent.click(screen.getByText("Save"))
 
       // Total は変わらず 1,000
       expect(screen.getByText("Total Stack: 1K")).toBeInTheDocument()
@@ -117,6 +150,7 @@ describe("PokerChipCalculator", () => {
       render(<PokerChipCalculator />)
 
       fireEvent.click(screen.getByText("add chip"))
+      fireEvent.click(screen.getByText("Save"))
 
       const removeButtons = screen.getAllByLabelText("Remove chip")
       expect(removeButtons.length).toBe(2)
