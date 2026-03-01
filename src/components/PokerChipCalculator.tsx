@@ -2,6 +2,12 @@ import { formatChipAmount, formatFullNumber } from "@/lib/format-numbers"
 import { calculateTotal, calculateBB, sortChipsByValue, ChipRow } from "@/lib/chip-logic"
 import { calculateUnitValue, Unit } from "@/lib/units"
 import {
+  loadPreset,
+  saveCurrentAsPreset,
+  deleteUserPreset,
+} from "@/lib/presets"
+import type { ChipPreset } from "@/lib/presets"
+import {
   createSnapshot,
   addSnapshot,
   removeLastSnapshot,
@@ -9,11 +15,12 @@ import {
   createSession,
 } from "@/lib/stack-history"
 import type { Session, StackSnapshot } from "@/lib/stack-history"
-import { Minus, Plus, BarChart3, Undo2, RotateCcw } from "lucide-react"
+import { Minus, Plus, BarChart3, Undo2, RotateCcw, ListChecks } from "lucide-react"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
 import ChipEditForm from "./ChipEditForm"
 import ChipIcon from "./ChipIcon"
+import PresetDialog from "./PresetDialog"
 import ScrollableCounter from "./ScrollableCounter"
 import StackGraph from "./StackGraph"
 import { Button } from "./ui/button"
@@ -37,6 +44,8 @@ export default function PokerChipCalculator() {
     { id: 1, amount: 100, unit: "1", count: 10, color: "#ef4444" },
   ])
   const [session, setSession] = useLocalStorage<Session>("stack-session", createSession())
+  const [userPresets, setUserPresets] = useLocalStorage<ChipPreset[]>("chip-presets", [])
+  const [showPresetDialog, setShowPresetDialog] = useState(false)
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [memoInput, setMemoInput] = useState("")
   const [editingSnapshot, setEditingSnapshot] = useState<StackSnapshot | null>(null)
@@ -75,6 +84,24 @@ export default function PokerChipCalculator() {
 
   const removeChip = (id: number) => {
     setChips(prev => prev.length > 1 ? prev.filter((chip) => chip.id !== id) : prev)
+  }
+
+  const handleSelectPreset = (preset: ChipPreset) => {
+    const rows = loadPreset(preset)
+    setChips(rows)
+    setCurrentBlindAmount(preset.blindAmount)
+    setCurrentBlindUnit(preset.blindUnit)
+    nextIdRef.current = rows.length + 1
+  }
+
+  const handleSavePreset = (name: string) => {
+    const preset = saveCurrentAsPreset(chips, currentBlindAmount, currentBlindUnit, name, userPresets)
+    setUserPresets(prev => [...prev, preset])
+    toast.success(`Preset "${preset.name}" を保存しました`)
+  }
+
+  const handleDeletePreset = (id: string) => {
+    setUserPresets(prev => deleteUserPreset(prev, id))
   }
 
   const total = calculateTotal(chips)
@@ -157,9 +184,20 @@ export default function PokerChipCalculator() {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em] px-1">
-            Chips
-          </h2>
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">
+              Chips
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPresetDialog(true)}
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <ListChecks className="h-3.5 w-3.5 mr-1" />
+              Presets
+            </Button>
+          </div>
 
           {chips.map((chip) => {
             const chipTotal = calculateUnitValue(chip.amount, chip.unit) * (chip.count ?? 0)
@@ -265,6 +303,15 @@ export default function PokerChipCalculator() {
           <p className="text-sm text-muted-foreground">({formatFullNumber(total)} chips)</p>
           <p className="text-base text-muted-foreground">({bbDisplay} Big Blinds)</p>
         </section>
+
+        <PresetDialog
+          open={showPresetDialog}
+          onOpenChange={setShowPresetDialog}
+          userPresets={userPresets}
+          onSelect={handleSelectPreset}
+          onSave={handleSavePreset}
+          onDelete={handleDeletePreset}
+        />
 
         <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
           <DialogContent>
