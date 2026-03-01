@@ -106,6 +106,14 @@ export default function TutorialOverlay({
 
   useEffect(() => {
     if (!active) return
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [active])
+
+  useEffect(() => {
+    if (!active) return
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onSkip()

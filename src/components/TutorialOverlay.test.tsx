@@ -129,6 +129,29 @@ describe("TutorialOverlay", () => {
     })
   })
 
+  describe("ページスクロール抑制", () => {
+    it("active が true のとき body に overflow:hidden が設定される", () => {
+      render(<TutorialOverlay {...defaultProps} active={true} />)
+      expect(document.body.style.overflow).toBe("hidden")
+    })
+
+    it("active が false になると overflow:hidden が解除される", () => {
+      const { rerender } = render(<TutorialOverlay {...defaultProps} active={true} />)
+      expect(document.body.style.overflow).toBe("hidden")
+
+      rerender(<TutorialOverlay {...defaultProps} active={false} />)
+      expect(document.body.style.overflow).toBe("")
+    })
+
+    it("アンマウント時に overflow:hidden が解除される", () => {
+      const { unmount } = render(<TutorialOverlay {...defaultProps} active={true} />)
+      expect(document.body.style.overflow).toBe("hidden")
+
+      unmount()
+      expect(document.body.style.overflow).toBe("")
+    })
+  })
+
   it("オーバーレイ背景をクリックしてもチュートリアルは閉じない", () => {
     render(<TutorialOverlay {...defaultProps} />)
     const overlay = screen.getByTestId("tutorial-overlay-bg")
