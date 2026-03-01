@@ -15,12 +15,13 @@ import {
   createSession,
 } from "@/lib/stack-history"
 import type { Session, StackSnapshot } from "@/lib/stack-history"
-import { Minus, Plus, BarChart3, Undo2, RotateCcw, ListChecks } from "lucide-react"
+import { Minus, Plus, BarChart3, Undo2, RotateCcw, ListChecks, HelpCircle } from "lucide-react"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
 import ChipEditForm from "./ChipEditForm"
 import ChipIcon from "./ChipIcon"
 import PresetDialog from "./PresetDialog"
+import TutorialOverlay from "./TutorialOverlay"
 import ScrollableCounter from "./ScrollableCounter"
 import StackGraph from "./StackGraph"
 import { Button } from "./ui/button"
@@ -36,6 +37,7 @@ import { Input } from "./ui/input"
 import UnitInputSelect from "./UnitInputSelect"
 import { Label } from "./ui/label"
 import { useSessionStorage, useLocalStorage } from "usehooks-ts"
+import { useTutorial } from "@/lib/use-tutorial"
 
 export default function PokerChipCalculator() {
   const [currentBlindAmount, setCurrentBlindAmount] = useSessionStorage<number | null>("current-blind-amount",100)
@@ -54,6 +56,7 @@ export default function PokerChipCalculator() {
   const [addChipAmount, setAddChipAmount] = useState<number | null>(100)
   const [addChipUnit, setAddChipUnit] = useState<Unit>("1")
   const [addChipColor, setAddChipColor] = useState("#ef4444")
+  const tutorial = useTutorial()
   const nextIdRef = useRef(Math.max(0, ...chips.map(c => c.id)) + 1)
 
   const updateChip = (id: number, amount: number, unit: Unit, color: string) => {
@@ -155,6 +158,15 @@ export default function PokerChipCalculator() {
         <header className="flex items-center gap-2.5 pt-2">
           <span className="text-2xl text-primary">♠</span>
           <h1 className="text-xl font-semibold tracking-tight">Poker Chip Calculator</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={tutorial.start}
+            className="ml-auto h-8 w-8 text-muted-foreground hover:text-foreground"
+            aria-label="チュートリアルを表示"
+          >
+            <HelpCircle className="h-4.5 w-4.5" />
+          </Button>
         </header>
 
         <section className="rounded-2xl bg-card border border-border overflow-hidden">
@@ -171,7 +183,7 @@ export default function PokerChipCalculator() {
             <p className="text-sm text-muted-foreground">
               Current amount: {formatChipAmount(total)} ({bbDisplay} BB)
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3" data-tutorial="blind-input">
               <Label className="text-sm text-muted-foreground whitespace-nowrap">
                 Big Blind (BB):
               </Label>
@@ -199,7 +211,7 @@ export default function PokerChipCalculator() {
             </Button>
           </div>
 
-          {chips.map((chip) => {
+          {chips.map((chip, index) => {
             const chipTotal = calculateUnitValue(chip.amount, chip.unit) * (chip.count ?? 0)
             return (
               <div key={chip.id} className="flex items-center gap-3 rounded-xl bg-card border border-border p-3">
@@ -215,6 +227,7 @@ export default function PokerChipCalculator() {
                     min={0}
                     max={999}
                     onChange={(v) => updateChipCount(chip.id, v)}
+                    {...(index === 0 ? { "data-tutorial": "chip-counter" } : {})}
                   />
                   <span className="text-sm text-muted-foreground flex-1 text-right">= {formatChipAmount(chipTotal)}</span>
                 </div>
@@ -236,6 +249,7 @@ export default function PokerChipCalculator() {
             variant="ghost"
             onClick={openAddChipDialog}
             className="w-full border border-dashed border-border rounded-xl h-11 text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+            data-tutorial="add-chip"
           >
             <Plus className="h-4 w-4 mr-2" />
             add chip
@@ -289,6 +303,7 @@ export default function PokerChipCalculator() {
             <Button
               onClick={handleRecord}
               className="h-11 px-5 text-sm font-medium shrink-0"
+              data-tutorial="record-button"
             >
               <BarChart3 className="h-4 w-4 mr-2" />
               記録
@@ -303,6 +318,18 @@ export default function PokerChipCalculator() {
           <p className="text-sm text-muted-foreground">({formatFullNumber(total)} chips)</p>
           <p className="text-base text-muted-foreground">({bbDisplay} Big Blinds)</p>
         </section>
+
+        <TutorialOverlay
+          active={tutorial.active}
+          currentStep={tutorial.currentStep}
+          currentStepIndex={tutorial.currentStepIndex}
+          totalSteps={tutorial.totalSteps}
+          isFirstStep={tutorial.isFirstStep}
+          isLastStep={tutorial.isLastStep}
+          onNext={tutorial.next}
+          onPrev={tutorial.prev}
+          onSkip={tutorial.skip}
+        />
 
         <PresetDialog
           open={showPresetDialog}

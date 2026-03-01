@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import PokerChipCalculator from "./PokerChipCalculator"
+import { TUTORIAL_VERSION, TUTORIAL_STEPS } from "@/lib/tutorial"
 
 vi.mock("recharts", async () => {
   const actual = await vi.importActual<typeof import("recharts")>("recharts")
@@ -250,6 +251,67 @@ describe("PokerChipCalculator", () => {
       fireEvent.click(screen.getByText("記録"))
 
       expect(memoInput).toHaveValue("")
+    })
+  })
+
+  describe("チュートリアル統合", () => {
+    it("初回アクセス時にチュートリアルが自動表示される", () => {
+      render(<PokerChipCalculator />)
+      expect(screen.getByRole("dialog", { name: "チュートリアル" })).toBeInTheDocument()
+      expect(screen.getByText(TUTORIAL_STEPS[0]!.title)).toBeInTheDocument()
+    })
+
+    it("ステップを全て進行するとチュートリアルが閉じる", () => {
+      render(<PokerChipCalculator />)
+
+      for (let i = 0; i < TUTORIAL_STEPS.length - 1; i++) {
+        fireEvent.click(screen.getByText("次へ"))
+      }
+      fireEvent.click(screen.getByText("完了"))
+
+      expect(screen.queryByRole("dialog", { name: "チュートリアル" })).not.toBeInTheDocument()
+    })
+
+    it("チュートリアル完了後に再レンダリングしても表示されない", () => {
+      const { unmount } = render(<PokerChipCalculator />)
+      fireEvent.click(screen.getByText("スキップ"))
+      unmount()
+
+      render(<PokerChipCalculator />)
+      expect(screen.queryByRole("dialog", { name: "チュートリアル" })).not.toBeInTheDocument()
+    })
+
+    it("バージョン更新するとチュートリアルが再表示される", () => {
+      localStorage.setItem("tutorial-version", JSON.stringify(TUTORIAL_VERSION - 1))
+      render(<PokerChipCalculator />)
+      expect(screen.getByRole("dialog", { name: "チュートリアル" })).toBeInTheDocument()
+    })
+
+    it("ヘルプボタンでチュートリアルを再表示できる", () => {
+      localStorage.setItem("tutorial-version", JSON.stringify(TUTORIAL_VERSION))
+      render(<PokerChipCalculator />)
+
+      expect(screen.queryByRole("dialog", { name: "チュートリアル" })).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByLabelText("チュートリアルを表示"))
+
+      expect(screen.getByRole("dialog", { name: "チュートリアル" })).toBeInTheDocument()
+      expect(screen.getByText(TUTORIAL_STEPS[0]!.title)).toBeInTheDocument()
+    })
+
+    it("ヘルプボタンがヘッダーに表示される", () => {
+      localStorage.setItem("tutorial-version", JSON.stringify(TUTORIAL_VERSION))
+      render(<PokerChipCalculator />)
+      expect(screen.getByLabelText("チュートリアルを表示")).toBeInTheDocument()
+    })
+
+    it("data-tutorial 属性が対象要素に付与されている", () => {
+      localStorage.setItem("tutorial-version", JSON.stringify(TUTORIAL_VERSION))
+      render(<PokerChipCalculator />)
+      expect(document.querySelector('[data-tutorial="blind-input"]')).toBeInTheDocument()
+      expect(document.querySelector('[data-tutorial="chip-counter"]')).toBeInTheDocument()
+      expect(document.querySelector('[data-tutorial="add-chip"]')).toBeInTheDocument()
+      expect(document.querySelector('[data-tutorial="record-button"]')).toBeInTheDocument()
     })
   })
 

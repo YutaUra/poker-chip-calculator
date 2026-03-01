@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback, useState, startTransition } from "react";
 import { cn } from "@/lib/utils";
 
-const DEAD_ZONE = 25;
+const DEAD_ZONE = 35;
 const ITEM_HEIGHT = 28;
 
 // デッドゾーン外の距離をべき乗カーブで速度に変換する。
@@ -11,17 +11,16 @@ function distanceToSpeed(distance: number): number {
   const absDistance = Math.abs(distance);
   if (absDistance <= DEAD_ZONE) return 0;
   const effective = absDistance - DEAD_ZONE;
-  const speed = Math.pow(effective / 20, 1.5) * 2;
+  const speed = Math.pow(effective / 30, 1.5) * 2;
   // 上方向（distance > 0）→ 値増加（正の速度）、下方向 → 値減少（負の速度）
   return distance > 0 ? speed : -speed;
 }
 
-interface ScrollableCounterProps {
+interface ScrollableCounterProps extends Omit<React.ComponentPropsWithoutRef<"div">, "onChange"> {
   value: number;
   min?: number;
   max?: number;
   onChange: (value: number) => void;
-  className?: string;
 }
 
 export default function ScrollableCounter({
@@ -30,6 +29,7 @@ export default function ScrollableCounter({
   max = 999,
   onChange,
   className,
+  ...restProps
 }: ScrollableCounterProps) {
   const prev = value - 1;
   const next = value + 1;
@@ -147,15 +147,23 @@ export default function ScrollableCounter({
   // React の onWheel は passive リスナーのため preventDefault() が効かない。
   // ネイティブリスナーで { passive: false } を指定してページスクロールを抑制する。
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastWheelChangeRef = useRef(0);
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    // deltaY の粒度がマウスとトラックパッドで大きく異なるため、
+    // 蓄積方式ではなく時間ベースのスロットルで一定ペースに揃える。
+    const WHEEL_INTERVAL = 120;
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      if (e.deltaY < 0 && valueRef.current < maxRef.current) {
-        onChangeRef.current(valueRef.current + 1);
-      } else if (e.deltaY > 0 && valueRef.current > minRef.current) {
+      const now = performance.now();
+      if (now - lastWheelChangeRef.current < WHEEL_INTERVAL) return;
+      if (e.deltaY > 0 && valueRef.current > minRef.current) {
         onChangeRef.current(valueRef.current - 1);
+        lastWheelChangeRef.current = now;
+      } else if (e.deltaY < 0 && valueRef.current < maxRef.current) {
+        onChangeRef.current(valueRef.current + 1);
+        lastWheelChangeRef.current = now;
       }
     };
     el.addEventListener("wheel", handleWheel, { passive: false });
@@ -180,6 +188,7 @@ export default function ScrollableCounter({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      {...restProps}
     >
       {/* グラデーションオーバーレイ（上） */}
       <div className="absolute inset-x-0 top-0 h-7 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />

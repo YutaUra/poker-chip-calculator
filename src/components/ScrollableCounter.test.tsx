@@ -246,8 +246,8 @@ describe("ScrollableCounter", () => {
       // Arrange: pointerdown で原点 Y=200 を記録
       fireEvent.pointerDown(spinbutton, { clientY: 200 })
 
-      // Act: 上方向に50px移動（デッドゾーンを超える）
-      fireEvent.pointerMove(spinbutton, { clientY: 150 })
+      // Act: 上方向に80px移動（デッドゾーンを超える）
+      fireEvent.pointerMove(spinbutton, { clientY: 120 })
 
       // rAF ループを複数回進めて値変化を起こす
       advanceTimeAndFlush(500, 5)
@@ -269,8 +269,8 @@ describe("ScrollableCounter", () => {
       // Arrange: pointerdown で原点 Y=200 を記録
       fireEvent.pointerDown(spinbutton, { clientY: 200 })
 
-      // Act: 下方向に50px移動（デッドゾーンを超える）
-      fireEvent.pointerMove(spinbutton, { clientY: 250 })
+      // Act: 下方向に80px移動（デッドゾーンを超える）
+      fireEvent.pointerMove(spinbutton, { clientY: 280 })
 
       // rAF ループを複数回進めて値変化を起こす
       advanceTimeAndFlush(500, 5)
@@ -312,7 +312,7 @@ describe("ScrollableCounter", () => {
 
       // Arrange: pointerdown → pointermove で値変化を開始
       fireEvent.pointerDown(spinbutton, { clientY: 200 })
-      fireEvent.pointerMove(spinbutton, { clientY: 150 })
+      fireEvent.pointerMove(spinbutton, { clientY: 120 })
       advanceTimeAndFlush(300, 3)
 
       // pointerup 前の呼び出し回数を記録
@@ -382,7 +382,7 @@ describe("ScrollableCounter", () => {
       const spinbutton = screen.getByRole("spinbutton")
 
       fireEvent.pointerDown(spinbutton, { clientY: 200 })
-      fireEvent.pointerMove(spinbutton, { clientY: 250 })
+      fireEvent.pointerMove(spinbutton, { clientY: 280 })
 
       advanceTimeAndFlush(500, 5)
 
@@ -402,7 +402,7 @@ describe("ScrollableCounter", () => {
       const spinbutton = screen.getByRole("spinbutton")
 
       fireEvent.pointerDown(spinbutton, { clientY: 200 })
-      fireEvent.pointerMove(spinbutton, { clientY: 250 })
+      fireEvent.pointerMove(spinbutton, { clientY: 280 })
 
       // エラーなく実行できること
       expect(() => advanceTimeAndFlush(500, 5)).not.toThrow()
