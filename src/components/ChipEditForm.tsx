@@ -1,3 +1,4 @@
+import clsx from "clsx"
 import { formatChipAmount, formatFullNumber } from "@/lib/format-numbers"
 import { Unit, calculateUnitValue } from "@/lib/units"
 import { Label } from "./ui/label"
@@ -69,9 +70,10 @@ export default function ChipEditForm({
               key={chipColor.value}
               aria-label={chipColor.name}
               aria-pressed={color === chipColor.value}
-              className={`w-12 h-12 rounded-full ring-2 transition-all ${
-                color === chipColor.value ? "ring-primary ring-offset-2 ring-offset-popover" : "ring-border hover:ring-muted-foreground"
-              }`}
+              className={clsx(
+                "w-12 h-12 rounded-full ring-2 transition-all",
+                color === chipColor.value ? "ring-primary ring-offset-2 ring-offset-popover" : "ring-border hover:ring-muted-foreground",
+              )}
               style={{ backgroundColor: chipColor.value }}
               onClick={() => onColorChange(chipColor.value)}
             />

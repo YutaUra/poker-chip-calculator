@@ -1,3 +1,4 @@
+import clsx from "clsx"
 import { Unit, calculateUnitValue } from "@/lib/units"
 export type { Unit }
 export { calculateUnitValue }
@@ -31,7 +32,7 @@ export default function UnitInputSelect({ amount, unit, onChange, className, pla
   }
 
   return (
-    <div className={`flex gap-2 ${className}`}>
+    <div className={clsx("flex gap-2", className)}>
       <Input
         type="number"
         inputMode="numeric"

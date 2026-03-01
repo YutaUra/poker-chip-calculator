@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import clsx from "clsx"
 import { X } from "lucide-react"
 import { Button } from "./ui/button"
 import type { TutorialStep } from "@/lib/tutorial"
@@ -129,13 +130,16 @@ export default function TutorialOverlay({
       {targetRect ? (
         <div
           data-testid="tutorial-overlay-bg"
-          className={`absolute rounded-lg border-2 border-primary/50${settled ? " transition-opacity duration-400 ease-out" : ""}`}
+          className={clsx(
+            "absolute rounded-lg border-2 border-primary/50",
+            settled && "transition-opacity duration-400 ease-out",
+          )}
           style={{
             top: targetRect.top,
             left: targetRect.left,
             width: targetRect.width,
             height: targetRect.height,
-            boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6)",
+            boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.75)",
             zIndex: 101,
             opacity: settled ? 1 : 0,
           }}
@@ -143,14 +147,17 @@ export default function TutorialOverlay({
       ) : (
         <div
           data-testid="tutorial-overlay-bg"
-          className="absolute inset-0 bg-black/60"
+          className="absolute inset-0 bg-black/75"
           onClick={(e) => e.stopPropagation()}
         />
       )}
 
       <div
         ref={popoverRef}
-        className={`absolute z-[102] w-[min(22rem,calc(100vw-2rem))] rounded-xl bg-card border border-border p-5 shadow-xl${settled ? " transition-opacity duration-400 ease-out" : ""}`}
+        className={clsx(
+          "absolute z-[102] w-[min(22rem,calc(100vw-2rem))] rounded-xl bg-card border border-border p-5 shadow-xl",
+          settled && "transition-opacity duration-400 ease-out",
+        )}
         style={{ ...popoverPosition, opacity: settled ? 1 : 0 }}
       >
         <button

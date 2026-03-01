@@ -1,3 +1,4 @@
+import clsx from "clsx"
 import { formatChipAmount, formatFullNumber } from "@/lib/format-numbers"
 import { Unit, calculateUnitValue } from "@/lib/units"
 import { useState } from "react"
@@ -46,7 +47,10 @@ export default function ChipIcon({ amount, unit, color, onSave }: ChipIconProps)
     <Dialog open={isOpen} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
         <button
-          className={`relative w-14 h-14 rounded-full shadow-lg shadow-black/50 ring-2 ring-white/10 hover:ring-white/25 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center font-bold ${fontSize}`}
+          className={clsx(
+            "relative w-14 h-14 rounded-full shadow-lg shadow-black/50 ring-2 ring-white/10 hover:ring-white/25 hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center font-bold",
+            fontSize,
+          )}
           style={{ backgroundColor: color, color: textColor }}
           title={`${formatFullNumber(calculateUnitValue(amount, unit))} chips`}
         >
