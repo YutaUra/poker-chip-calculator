@@ -1,9 +1,12 @@
+import { useState } from "react"
 import clsx from "clsx"
+import { Plus } from "lucide-react"
 import { formatChipAmount, formatFullNumber } from "@/lib/format-numbers"
 import { Unit, calculateUnitValue } from "@/lib/units"
 import { Label } from "./ui/label"
 import UnitInputSelect from "./UnitInputSelect"
 import { Button } from "./ui/button"
+import ExtendedColorPicker from "./ExtendedColorPicker"
 
 export const chipColors = [
   { name: "Red", value: "#ef4444" },
@@ -13,7 +16,6 @@ export const chipColors = [
   { name: "Yellow", value: "#eab308" },
   { name: "Pink", value: "#ec4899" },
   { name: "Orange", value: "#f97316" },
-  { name: "Gray", value: "#6b7280" },
   { name: "White", value: "#ffffff" },
   { name: "Black", value: "#171717" },
 ]
@@ -49,6 +51,8 @@ export default function ChipEditForm({
   onSave,
   onCancel,
 }: ChipEditFormProps) {
+  const [showExtended, setShowExtended] = useState(false)
+
   return (
     <div className="space-y-4">
       <div>
@@ -78,7 +82,22 @@ export default function ChipEditForm({
               onClick={() => onColorChange(chipColor.value)}
             />
           ))}
+          <button
+            aria-label="もっと色を見る"
+            className={clsx(
+              "w-12 h-12 rounded-full ring-2 transition-all flex items-center justify-center",
+              showExtended ? "ring-primary ring-offset-2 ring-offset-popover bg-muted" : "ring-border hover:ring-muted-foreground bg-muted/50",
+            )}
+            onClick={() => setShowExtended((prev) => !prev)}
+          >
+            <Plus className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
+        {showExtended && (
+          <div className="mt-3">
+            <ExtendedColorPicker color={color} onColorChange={onColorChange} />
+          </div>
+        )}
       </div>
       <div className="flex justify-end space-x-2 pt-4">
         <Button variant="outline" onClick={onCancel}>
