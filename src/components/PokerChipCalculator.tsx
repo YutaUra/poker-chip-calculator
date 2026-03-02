@@ -18,6 +18,7 @@ import AppHeader from "./AppHeader"
 import ChipListSection from "./ChipListSection"
 import PresetDialog from "./PresetDialog"
 import SessionHistoryDialog from "./SessionHistoryDialog"
+import ShareDialog from "./ShareDialog"
 import StackRecordSection from "./StackRecordSection"
 import TutorialOverlay from "./TutorialOverlay"
 import UnitInputSelect from "./UnitInputSelect"
@@ -37,6 +38,7 @@ export default function PokerChipCalculator() {
   const stackSession = useStackSession()
   const tutorial = useTutorial()
   const sessionArchive = useSessionArchive()
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
 
   const anteEffective = ante.anteAmount !== null ? calculateUnitValue(ante.anteAmount, ante.anteUnit) : 0
@@ -165,6 +167,7 @@ export default function PokerChipCalculator() {
           onArchiveAndReset={handleArchiveAndReset}
           updateMemo={stackSession.updateMemo}
           onOpenHistory={() => setHistoryDialogOpen(true)}
+          onShare={() => setShareDialogOpen(true)}
           onExportCSV={handleExportCSV}
           onExportJSON={handleExportJSON}
           onImport={stackSession.importSession}
@@ -210,6 +213,11 @@ export default function PokerChipCalculator() {
           onRemoveArchive={sessionArchive.removeArchive}
         />
 
+        <ShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          session={stackSession.session}
+        />
       </div>
     </div>
   )
