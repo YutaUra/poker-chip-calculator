@@ -1,5 +1,5 @@
 import { useRef, useState } from "react"
-import { BarChart3, Undo2, RotateCcw, History, Share2, Download, Upload } from "lucide-react"
+import { BarChart3, Undo2, RotateCcw, History, Download, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { formatChipAmount } from "@/lib/format-numbers"
 import { importFromJSON } from "@/lib/data-export"
@@ -41,7 +41,6 @@ interface StackRecordSectionProps {
   onArchiveAndReset: () => void
   updateMemo: (snapshotId: string, memo: string | null) => void
   onOpenHistory: () => void
-  onShare: () => void
   onExportCSV?: () => void
   onExportJSON?: () => void
   onImport?: (session: Session) => void
@@ -59,7 +58,6 @@ export default function StackRecordSection({
   onArchiveAndReset,
   updateMemo,
   onOpenHistory,
-  onShare,
   onExportCSV,
   onExportJSON,
   onImport,
@@ -202,18 +200,6 @@ export default function StackRecordSection({
             )}
             {session.snapshots.length > 0 && (
               <>
-                {session.snapshots.length >= 2 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onShare}
-                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-                    aria-label="セッションを共有"
-                  >
-                    <Share2 className="h-3.5 w-3.5 mr-1" />
-                    共有
-                  </Button>
-                )}
                 <Button
                   variant="ghost"
                   size="sm"
