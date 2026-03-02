@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { useState } from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
+import { haptic } from "@/lib/haptic/haptic"
 import ScrollableCounter from "./ScrollableCounter"
+
+vi.mock("@/lib/haptic/haptic", () => ({
+  haptic: vi.fn(),
+  supportsHaptic: false,
+}))
 
 describe("ScrollableCounter", () => {
   const defaultProps = {
@@ -396,10 +402,9 @@ describe("ScrollableCounter", () => {
       }
     })
 
-    it("値が変化するたびにバイブレーションが発火する", () => {
+    it("値が変化するたびにハプティクスフィードバックが発火する", () => {
       const onChange = vi.fn()
-      const vibrate = vi.fn()
-      vi.stubGlobal("navigator", { ...navigator, vibrate })
+      vi.mocked(haptic).mockClear()
 
       render(
         <ScrollableCounter {...defaultProps} value={5} onChange={onChange} />,
@@ -412,27 +417,9 @@ describe("ScrollableCounter", () => {
 
       advanceTimeAndFlush(500, 5)
 
-      // onChange が呼ばれた回数と同じだけ vibrate も呼ばれる
+      // onChange が呼ばれた回数と同じだけ haptic も呼ばれる
       expect(onChange).toHaveBeenCalled()
-      expect(vibrate.mock.calls.length).toBe(onChange.mock.calls.length)
-    })
-
-    it("navigator.vibrateが存在しない環境でもエラーにならない", () => {
-      const onChange = vi.fn()
-      vi.stubGlobal("navigator", { ...navigator, vibrate: undefined })
-
-      render(
-        <ScrollableCounter {...defaultProps} value={5} onChange={onChange} />,
-      )
-
-      const spinbutton = screen.getByRole("spinbutton")
-
-      fireEvent.pointerDown(spinbutton, { clientY: 200 })
-      fireEvent.pointerMove(spinbutton, { clientY: 280 })
-
-      // エラーなく実行できること
-      expect(() => advanceTimeAndFlush(500, 5)).not.toThrow()
-      expect(onChange).toHaveBeenCalled()
+      expect(vi.mocked(haptic).mock.calls.length).toBe(onChange.mock.calls.length)
     })
   })
 

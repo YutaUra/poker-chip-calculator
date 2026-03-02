@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState, startTransition } from "react";
+import { haptic } from "@/lib/haptic/haptic";
 import { cn } from "@/lib/utils";
 
 const DEAD_ZONE = 35;
@@ -95,7 +96,7 @@ export default function ScrollableCounter({
         startTransition(() => {
           onChangeRef.current(newValue);
         });
-        navigator.vibrate?.(1);
+        haptic(1);
       }
     }
 
