@@ -120,4 +120,83 @@ describe("shareResult", () => {
     // Assert
     expect(writeTextSpy).toHaveBeenCalledWith("Session Result: +15.0BB\nhttps://example.com")
   })
+
+  it("canShareがファイル対応の場合はfilesを含めてシェアする", async () => {
+    // Arrange
+    const shareSpy = vi.fn().mockResolvedValue(undefined)
+    const canShareSpy = vi.fn().mockReturnValue(true)
+    Object.defineProperty(navigator, "share", {
+      value: shareSpy,
+      writable: true,
+      configurable: true,
+    })
+    Object.defineProperty(navigator, "canShare", {
+      value: canShareSpy,
+      writable: true,
+      configurable: true,
+    })
+
+    const fakeFile = new File(["fake"], "graph.png", { type: "image/png" })
+
+    // Act
+    await shareResult("Session Result: +15.0BB", undefined, fakeFile)
+
+    // Assert
+    expect(canShareSpy).toHaveBeenCalledWith({ files: [fakeFile] })
+    expect(shareSpy).toHaveBeenCalledWith({
+      text: "Session Result: +15.0BB",
+      files: [fakeFile],
+    })
+  })
+
+  it("canShareがファイル非対応の場合はテキストのみでシェアする", async () => {
+    // Arrange
+    const shareSpy = vi.fn().mockResolvedValue(undefined)
+    const canShareSpy = vi.fn().mockReturnValue(false)
+    Object.defineProperty(navigator, "share", {
+      value: shareSpy,
+      writable: true,
+      configurable: true,
+    })
+    Object.defineProperty(navigator, "canShare", {
+      value: canShareSpy,
+      writable: true,
+      configurable: true,
+    })
+
+    const fakeFile = new File(["fake"], "graph.png", { type: "image/png" })
+
+    // Act
+    await shareResult("Session Result: +15.0BB", undefined, fakeFile)
+
+    // Assert
+    expect(shareSpy).toHaveBeenCalledWith({
+      text: "Session Result: +15.0BB",
+    })
+  })
+
+  it("canShareが存在しない場合はテキストのみでシェアする", async () => {
+    // Arrange
+    const shareSpy = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, "share", {
+      value: shareSpy,
+      writable: true,
+      configurable: true,
+    })
+    Object.defineProperty(navigator, "canShare", {
+      value: undefined,
+      writable: true,
+      configurable: true,
+    })
+
+    const fakeFile = new File(["fake"], "graph.png", { type: "image/png" })
+
+    // Act
+    await shareResult("Session Result: +15.0BB", undefined, fakeFile)
+
+    // Assert
+    expect(shareSpy).toHaveBeenCalledWith({
+      text: "Session Result: +15.0BB",
+    })
+  })
 })

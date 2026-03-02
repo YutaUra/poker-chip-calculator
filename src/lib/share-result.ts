@@ -7,11 +7,14 @@ async function copyToClipboard(text: string, url?: string): Promise<void> {
   await navigator.clipboard.writeText(buildClipboardText(text, url))
 }
 
-export async function shareResult(text: string, url?: string): Promise<void> {
+export async function shareResult(text: string, url?: string, file?: File): Promise<void> {
   if (typeof navigator.share === "function") {
     try {
       const shareData: ShareData = { text }
       if (url) shareData.url = url
+      if (file && navigator.canShare?.({ files: [file] })) {
+        shareData.files = [file]
+      }
       await navigator.share(shareData)
       return
     } catch (error) {

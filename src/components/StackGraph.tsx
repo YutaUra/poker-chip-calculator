@@ -1,3 +1,4 @@
+import type { Ref } from "react"
 import {
   LineChart,
   Line,
@@ -12,6 +13,7 @@ import { formatChipAmount } from "@/lib/format-numbers"
 import type { Session, StackSnapshot } from "@/lib/stack-history"
 
 interface StackGraphProps {
+  ref?: Ref<HTMLDivElement>
   session: Session
   onSnapshotClick?: (snapshotId: string) => void
   readOnly?: boolean
@@ -45,7 +47,7 @@ function CustomTooltip({
   )
 }
 
-export default function StackGraph({ session, onSnapshotClick, readOnly = false }: StackGraphProps) {
+export default function StackGraph({ ref, session, onSnapshotClick, readOnly = false }: StackGraphProps) {
   const { snapshots } = session
 
   if (snapshots.length === 0) {
@@ -61,7 +63,7 @@ export default function StackGraph({ session, onSnapshotClick, readOnly = false 
   const startBB = snapshots[0].bbValue
 
   return (
-    <div className="rounded-2xl bg-card border border-border p-4">
+    <div ref={ref} className="rounded-2xl bg-card border border-border p-4">
       <div className="flex items-center gap-4 mb-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">
           スタック推移

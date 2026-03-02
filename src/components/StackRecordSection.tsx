@@ -1,3 +1,4 @@
+import type { RefObject } from "react"
 import { useRef, useState } from "react"
 import { BarChart3, Undo2, RotateCcw, History, Share2, Download, Upload } from "lucide-react"
 import { toast } from "sonner"
@@ -24,6 +25,7 @@ import {
 } from "./ui/dialog"
 
 interface StackRecordSectionProps {
+  graphRef?: RefObject<HTMLDivElement | null>
   session: Session
   total: number
   bbValue: number
@@ -48,6 +50,7 @@ interface StackRecordSectionProps {
 }
 
 export default function StackRecordSection({
+  graphRef,
   session,
   total,
   bbValue,
@@ -260,7 +263,7 @@ export default function StackRecordSection({
           </Button>
         </div>
 
-        <StackGraph session={session} onSnapshotClick={handleSnapshotClick} />
+        <StackGraph ref={graphRef} session={session} onSnapshotClick={handleSnapshotClick} />
       </section>
 
       <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>

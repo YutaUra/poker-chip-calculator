@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { formatChipAmount, formatFullNumber } from "@/lib/format-numbers"
 import { exportToCSV, exportToJSON, downloadFile, generateExportFilename } from "@/lib/data-export"
 import { calculateMRatio, getMZone } from "@/lib/m-ratio"
@@ -40,6 +40,7 @@ export default function PokerChipCalculator() {
   const sessionArchive = useSessionArchive()
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
+  const graphRef = useRef<HTMLDivElement>(null)
 
   const anteEffective = ante.anteAmount !== null ? calculateUnitValue(ante.anteAmount, ante.anteUnit) : 0
   const bbEffective = blind.amount !== null ? calculateUnitValue(blind.amount, blind.unit) : 0
@@ -156,6 +157,7 @@ export default function PokerChipCalculator() {
         />
 
         <StackRecordSection
+          graphRef={graphRef}
           session={stackSession.session}
           total={total}
           bbValue={bbValue}
@@ -217,6 +219,7 @@ export default function PokerChipCalculator() {
           open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
           session={stackSession.session}
+          graphRef={graphRef}
         />
       </div>
     </div>
