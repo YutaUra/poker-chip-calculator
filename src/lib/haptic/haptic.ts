@@ -34,10 +34,17 @@ export function haptic(pattern: number | number[] = 50) {
       return
     }
 
-    // iOS haptic trick via checkbox switch element
+    // iOS haptic trick via checkbox switch element (iOS 18+)
+    // display: none だとレンダリングツリーから除外され
+    // Safari がハプティクスを発火しないため、
+    // offscreen 配置で視覚的に隠す。
     const label = document.createElement("label")
     label.ariaHidden = "true"
-    label.style.display = "none"
+    Object.assign(label.style, {
+      position: "fixed",
+      left: "-9999px",
+      opacity: "0",
+    })
 
     const input = document.createElement("input")
     input.type = "checkbox"
@@ -45,10 +52,10 @@ export function haptic(pattern: number | number[] = 50) {
     label.appendChild(input)
 
     try {
-      document.head.appendChild(label)
-      label.click()
+      document.body.appendChild(label)
+      input.click()
     } finally {
-      document.head.removeChild(label)
+      document.body.removeChild(label)
     }
   } catch {}
 }
