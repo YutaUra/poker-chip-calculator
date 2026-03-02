@@ -225,7 +225,7 @@ describe("PokerChipCalculator", () => {
       fireEvent.click(screen.getByLabelText("新しいセッションを開始"))
 
       expect(screen.getByText("新しいセッションを開始")).toBeInTheDocument()
-      expect(screen.getByText("リセットする")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "保存せずリセット" })).toBeInTheDocument()
     })
 
     it("確認ダイアログでリセットすると記録がクリアされる", () => {
@@ -233,7 +233,7 @@ describe("PokerChipCalculator", () => {
 
       fireEvent.click(screen.getByText("記録"))
       fireEvent.click(screen.getByLabelText("新しいセッションを開始"))
-      fireEvent.click(screen.getByText("リセットする"))
+      fireEvent.click(screen.getByRole("button", { name: "保存せずリセット" }))
 
       expect(screen.getByText("記録ボタンを押してスタックを記録しましょう")).toBeInTheDocument()
     })

@@ -1,11 +1,19 @@
-import { useState } from "react"
-import { BarChart3, Undo2, RotateCcw } from "lucide-react"
+import { useRef, useState } from "react"
+import { BarChart3, Undo2, RotateCcw, History, Share2, Download, Upload } from "lucide-react"
+import { toast } from "sonner"
 import { formatChipAmount } from "@/lib/format-numbers"
+import { importFromJSON } from "@/lib/data-export"
 import type { Unit } from "@/lib/units"
 import type { Session, StackSnapshot } from "@/lib/stack-history"
 import StackGraph from "./StackGraph"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -30,7 +38,13 @@ interface StackRecordSectionProps {
   }) => void
   removeLast: () => void
   reset: () => void
+  onArchiveAndReset: () => void
   updateMemo: (snapshotId: string, memo: string | null) => void
+  onOpenHistory: () => void
+  onShare: () => void
+  onExportCSV?: () => void
+  onExportJSON?: () => void
+  onImport?: (session: Session) => void
 }
 
 export default function StackRecordSection({
@@ -42,16 +56,30 @@ export default function StackRecordSection({
   record,
   removeLast,
   reset,
+  onArchiveAndReset,
   updateMemo,
+  onOpenHistory,
+  onShare,
+  onExportCSV,
+  onExportJSON,
+  onImport,
 }: StackRecordSectionProps) {
   const [memoInput, setMemoInput] = useState("")
   const [showResetDialog, setShowResetDialog] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [pendingImportSession, setPendingImportSession] = useState<Session | null>(null)
   const [editingSnapshot, setEditingSnapshot] = useState<StackSnapshot | null>(null)
   const [editingMemo, setEditingMemo] = useState("")
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleRecord = () => {
     record({ total, bbValue, blindAmount, blindUnit, memo: memoInput })
     setMemoInput("")
+  }
+
+  const handleArchiveAndReset = () => {
+    onArchiveAndReset()
+    setShowResetDialog(false)
   }
 
   const handleResetSession = () => {
@@ -73,6 +101,37 @@ export default function StackRecordSection({
     setEditingSnapshot(null)
   }
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const content = event.target?.result
+      if (typeof content !== "string") return
+
+      const result = importFromJSON(content)
+      if ("error" in result) {
+        toast.error(result.error)
+      } else {
+        setPendingImportSession(result)
+        setShowImportDialog(true)
+      }
+    }
+    reader.readAsText(file)
+
+    // ファイル入力をリセットして同じファイルの再選択を可能にする
+    e.target.value = ""
+  }
+
+  const handleConfirmImport = () => {
+    if (pendingImportSession && onImport) {
+      onImport(pendingImportSession)
+    }
+    setPendingImportSession(null)
+    setShowImportDialog(false)
+  }
+
   return (
     <>
       <section className="space-y-3">
@@ -81,8 +140,80 @@ export default function StackRecordSection({
             Stack Graph
           </h2>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenHistory}
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              aria-label="セッション履歴"
+            >
+              <History className="h-3.5 w-3.5 mr-1" />
+              履歴
+            </Button>
+            {onImport && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  aria-label="セッションをインポート"
+                >
+                  <Upload className="h-3.5 w-3.5 mr-1" />
+                  Import
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  aria-hidden="true"
+                />
+              </>
+            )}
+            {(onExportCSV || onExportJSON) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={session.snapshots.length === 0}
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    aria-label="セッションをエクスポート"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-1" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onExportCSV && (
+                    <DropdownMenuItem onClick={onExportCSV}>
+                      CSV でエクスポート
+                    </DropdownMenuItem>
+                  )}
+                  {onExportJSON && (
+                    <DropdownMenuItem onClick={onExportJSON}>
+                      JSON でエクスポート
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             {session.snapshots.length > 0 && (
               <>
+                {session.snapshots.length >= 2 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onShare}
+                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    aria-label="セッションを共有"
+                  >
+                    <Share2 className="h-3.5 w-3.5 mr-1" />
+                    共有
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -137,15 +268,18 @@ export default function StackRecordSection({
           <DialogHeader>
             <DialogTitle>新しいセッションを開始</DialogTitle>
             <DialogDescription>
-              現在の記録（{session.snapshots.length}件）がすべてクリアされます。この操作は元に戻せません。
+              現在の記録（{session.snapshots.length}件）がすべてクリアされます。セッションを履歴に保存しますか？
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row">
             <Button variant="ghost" onClick={() => setShowResetDialog(false)}>
               キャンセル
             </Button>
             <Button variant="destructive" onClick={handleResetSession}>
-              リセットする
+              保存せずリセット
+            </Button>
+            <Button onClick={handleArchiveAndReset} disabled={session.snapshots.length === 0}>
+              保存してリセット
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -175,6 +309,26 @@ export default function StackRecordSection({
             </Button>
             <Button onClick={handleSaveMemo}>
               保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>セッションをインポート</DialogTitle>
+            <DialogDescription>
+              現在のセッションを上書きしますか？
+              {pendingImportSession && ` (${pendingImportSession.snapshots.length}件の記録を含むセッション)`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setShowImportDialog(false); setPendingImportSession(null) }}>
+              キャンセル
+            </Button>
+            <Button onClick={handleConfirmImport}>
+              インポートする
             </Button>
           </DialogFooter>
         </DialogContent>

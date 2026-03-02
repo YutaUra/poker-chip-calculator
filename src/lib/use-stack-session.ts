@@ -2,6 +2,7 @@ import { useLocalStorage } from "usehooks-ts"
 import { toast } from "sonner"
 import type { Unit } from "@/lib/units"
 import type { Session } from "@/lib/stack-history"
+import type { ArchivedSession } from "@/lib/session-archive"
 import {
   createSession,
   createSnapshot,
@@ -9,6 +10,7 @@ import {
   removeLastSnapshot,
   updateSnapshotMemo,
 } from "@/lib/stack-history"
+import { archiveSession } from "@/lib/session-archive"
 
 interface UseStackSessionReturn {
   session: Session
@@ -21,7 +23,9 @@ interface UseStackSessionReturn {
   }) => void
   removeLast: () => void
   reset: () => void
+  archiveAndReset: (onArchive: (archived: ArchivedSession) => void) => void
   updateMemo: (snapshotId: string, memo: string | null) => void
+  importSession: (imported: Session) => void
 }
 
 export function useStackSession(): UseStackSessionReturn {
@@ -51,9 +55,21 @@ export function useStackSession(): UseStackSessionReturn {
     setSession(createSession())
   }
 
+  const archiveAndResetFn: UseStackSessionReturn["archiveAndReset"] = (onArchive) => {
+    const archived = archiveSession(session)
+    onArchive(archived)
+    setSession(createSession())
+    toast.success("セッションを保存しました")
+  }
+
   const updateMemo = (snapshotId: string, memo: string | null) => {
     setSession((prev) => updateSnapshotMemo(prev, snapshotId, memo))
   }
 
-  return { session, record, removeLast, reset, updateMemo }
+  const importSession = (imported: Session) => {
+    setSession(imported)
+    toast.success("セッションをインポートしました")
+  }
+
+  return { session, record, removeLast, reset, archiveAndReset: archiveAndResetFn, updateMemo, importSession }
 }

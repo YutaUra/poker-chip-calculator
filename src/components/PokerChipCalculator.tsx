@@ -1,14 +1,18 @@
-import { useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { formatChipAmount, formatFullNumber } from "@/lib/format-numbers"
+import { exportToCSV, exportToJSON, downloadFile, generateExportFilename } from "@/lib/data-export"
 import { calculateMRatio, getMZone } from "@/lib/m-ratio"
 import type { MZone } from "@/lib/m-ratio"
+import type { ShareConfig } from "@/lib/session-share"
 import { useAnte } from "@/lib/use-ante"
 import { useBlind } from "@/lib/use-blind"
 import { useCalculatedValues } from "@/lib/use-calculated-values"
 import { useChips } from "@/lib/use-chips"
+import { useConfigFromUrl } from "@/lib/use-config-from-url"
 import { useEffectiveStack } from "@/lib/use-effective-stack"
 import { usePotOdds } from "@/lib/use-pot-odds"
 import { usePresets } from "@/lib/use-presets"
+import { useSessionArchive } from "@/lib/use-session-archive"
 import { useStackSession } from "@/lib/use-stack-session"
 import { useTutorial } from "@/lib/use-tutorial"
 import { calculateUnitValue } from "@/lib/units"
@@ -19,6 +23,8 @@ import ChipListSection from "./ChipListSection"
 import EffectiveStackSection from "./EffectiveStackSection"
 import PotOddsSection from "./PotOddsSection"
 import PresetDialog from "./PresetDialog"
+import SessionHistoryDialog from "./SessionHistoryDialog"
+import ShareDialog from "./ShareDialog"
 import StackRecordSection from "./StackRecordSection"
 import TutorialOverlay from "./TutorialOverlay"
 import UnitInputSelect from "./UnitInputSelect"
@@ -39,6 +45,29 @@ export default function PokerChipCalculator() {
   const potOdds = usePotOdds()
   const stackSession = useStackSession()
   const tutorial = useTutorial()
+  const sessionArchive = useSessionArchive()
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
+
+  const applySharedConfig = useCallback(
+    (config: ShareConfig) => {
+      const rows = config.chips.map((c, i) => ({
+        id: i + 1,
+        amount: c.amount,
+        unit: c.unit,
+        count: c.count,
+        color: c.color,
+      }))
+      chipActions.setChips(rows)
+      chipActions.setNextId(rows.length + 1)
+      blind.set(config.blind.amount, config.blind.unit)
+    },
+    // chipActions / blind は useSessionStorage 由来で参照が毎回変わるため
+    // 初回マウント時のみ適用すれば十分。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+  useConfigFromUrl(applySharedConfig)
 
   const anteEffective = ante.anteAmount !== null ? calculateUnitValue(ante.anteAmount, ante.anteUnit) : 0
   const bbEffective = blind.amount !== null ? calculateUnitValue(blind.amount, blind.unit) : 0
@@ -67,6 +96,24 @@ export default function PokerChipCalculator() {
       blind.set(blindAmount, blindUnit)
     },
   })
+
+  const handleArchiveAndReset = () => {
+    stackSession.archiveAndReset((archived) => {
+      sessionArchive.addArchive(archived)
+    })
+  }
+
+  const handleExportCSV = () => {
+    const csv = exportToCSV(stackSession.session.snapshots)
+    const filename = generateExportFilename("csv")
+    downloadFile(csv, filename, "text/csv;charset=utf-8")
+  }
+
+  const handleExportJSON = () => {
+    const json = exportToJSON(stackSession.session)
+    const filename = generateExportFilename("json")
+    downloadFile(json, filename, "application/json")
+  }
 
   return (
     <div id="main-content" className="min-h-screen p-4 sm:p-8">
@@ -145,7 +192,13 @@ export default function PokerChipCalculator() {
           record={stackSession.record}
           removeLast={stackSession.removeLast}
           reset={stackSession.reset}
+          onArchiveAndReset={handleArchiveAndReset}
           updateMemo={stackSession.updateMemo}
+          onOpenHistory={() => setHistoryDialogOpen(true)}
+          onShare={() => setShareDialogOpen(true)}
+          onExportCSV={handleExportCSV}
+          onExportJSON={handleExportJSON}
+          onImport={stackSession.importSession}
         />
 
         <section className="rounded-2xl bg-card border border-border p-5 text-center space-y-1">
@@ -197,6 +250,34 @@ export default function PokerChipCalculator() {
           onSelect={presets.selectPreset}
           onSave={presets.savePreset}
           onDelete={presets.deletePreset}
+        />
+
+        <SessionHistoryDialog
+          open={historyDialogOpen}
+          onOpenChange={setHistoryDialogOpen}
+          archives={sessionArchive.archives}
+          overallSummary={sessionArchive.overallSummary}
+          onRemoveArchive={sessionArchive.removeArchive}
+        />
+
+        <ShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          session={stackSession.session}
+          chipConfig={
+            {
+              chips: chipActions.chips.map((c) => ({
+                amount: c.amount,
+                unit: c.unit,
+                count: c.count ?? 0,
+                color: c.color,
+              })),
+              blind: {
+                amount: blind.amount ?? 0,
+                unit: blind.unit,
+              },
+            } satisfies ShareConfig
+          }
         />
       </div>
     </div>

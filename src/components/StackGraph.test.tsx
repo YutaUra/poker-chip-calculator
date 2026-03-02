@@ -85,4 +85,37 @@ describe("StackGraph", () => {
       ).not.toBeInTheDocument()
     })
   })
+
+  describe("readOnlyモード", () => {
+    it("readOnlyがデフォルトfalseの場合にスタック推移が表示される", () => {
+      const session = makeSession([
+        { totalChips: 50000, bbValue: 100, recordNumber: 1 },
+        { totalChips: 60000, bbValue: 120, recordNumber: 2 },
+      ])
+      render(<StackGraph session={session} />)
+
+      expect(screen.getByText("スタック推移")).toBeInTheDocument()
+    })
+
+    it("readOnlyが true の場合にもスタック推移が表示される", () => {
+      const session = makeSession([
+        { totalChips: 50000, bbValue: 100, recordNumber: 1 },
+        { totalChips: 60000, bbValue: 120, recordNumber: 2 },
+      ])
+      render(<StackGraph session={session} readOnly />)
+
+      expect(screen.getByText("スタック推移")).toBeInTheDocument()
+    })
+
+    it("readOnlyが true の場合プレースホルダーは表示されない", () => {
+      const session = makeSession([
+        { totalChips: 50000, bbValue: 100, recordNumber: 1 },
+      ])
+      render(<StackGraph session={session} readOnly />)
+
+      expect(
+        screen.queryByText("記録ボタンを押してスタックを記録しましょう"),
+      ).not.toBeInTheDocument()
+    })
+  })
 })

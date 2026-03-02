@@ -14,6 +14,7 @@ import type { Session, StackSnapshot } from "@/lib/stack-history"
 interface StackGraphProps {
   session: Session
   onSnapshotClick?: (snapshotId: string) => void
+  readOnly?: boolean
 }
 
 function formatTime(timestamp: number): string {
@@ -44,7 +45,7 @@ function CustomTooltip({
   )
 }
 
-export default function StackGraph({ session, onSnapshotClick }: StackGraphProps) {
+export default function StackGraph({ session, onSnapshotClick, readOnly = false }: StackGraphProps) {
   const { snapshots } = session
 
   if (snapshots.length === 0) {
@@ -66,7 +67,7 @@ export default function StackGraph({ session, onSnapshotClick }: StackGraphProps
           スタック推移
         </p>
       </div>
-      <ResponsiveContainer width="100%" height={220}>
+      <ResponsiveContainer width="100%" height={readOnly ? 150 : 220}>
         <LineChart data={snapshots}>
           <XAxis
             dataKey="recordNumber"
@@ -114,9 +115,9 @@ export default function StackGraph({ session, onSnapshotClick }: StackGraphProps
             dot={{ r: 3, fill: "oklch(0.80 0.135 80)" }}
             activeDot={{
               r: 5,
-              cursor: onSnapshotClick ? "pointer" : "default",
+              cursor: !readOnly && onSnapshotClick ? "pointer" : "default",
               onClick: (_: unknown, payload: { payload?: StackSnapshot }) => {
-                if (onSnapshotClick && payload?.payload) {
+                if (!readOnly && onSnapshotClick && payload?.payload) {
                   onSnapshotClick(payload.payload.id)
                 }
               },
