@@ -9,8 +9,6 @@ import { useBlind } from "@/lib/use-blind"
 import { useCalculatedValues } from "@/lib/use-calculated-values"
 import { useChips } from "@/lib/use-chips"
 import { useConfigFromUrl } from "@/lib/use-config-from-url"
-import { useEffectiveStack } from "@/lib/use-effective-stack"
-import { usePotOdds } from "@/lib/use-pot-odds"
 import { usePresets } from "@/lib/use-presets"
 import { useSessionArchive } from "@/lib/use-session-archive"
 import { useStackSession } from "@/lib/use-stack-session"
@@ -20,8 +18,6 @@ import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import AppHeader from "./AppHeader"
 import ChipListSection from "./ChipListSection"
-import EffectiveStackSection from "./EffectiveStackSection"
-import PotOddsSection from "./PotOddsSection"
 import PresetDialog from "./PresetDialog"
 import SessionHistoryDialog from "./SessionHistoryDialog"
 import ShareDialog from "./ShareDialog"
@@ -41,8 +37,6 @@ export default function PokerChipCalculator() {
   const ante = useAnte()
   const chipActions = useChips()
   const { total, bbValue, bbDisplay } = useCalculatedValues(chipActions.chips, blind.amount, blind.unit)
-  const effectiveStack = useEffectiveStack(bbValue)
-  const potOdds = usePotOdds()
   const stackSession = useStackSession()
   const tutorial = useTutorial()
   const sessionArchive = useSessionArchive()
@@ -211,25 +205,6 @@ export default function PokerChipCalculator() {
             </p>
           )}
         </section>
-
-        <EffectiveStackSection
-          enabled={effectiveStack.enabled}
-          opponentBB={effectiveStack.opponentBB}
-          effectiveDisplay={effectiveStack.effectiveDisplay}
-          onToggle={effectiveStack.toggleEnabled}
-          onOpponentBBChange={effectiveStack.setOpponentBB}
-        />
-
-        <PotOddsSection
-          enabled={potOdds.enabled}
-          potSize={potOdds.potSize}
-          callAmount={potOdds.callAmount}
-          formattedPotOdds={potOdds.formattedPotOdds}
-          formattedEquity={potOdds.formattedEquity}
-          onToggle={potOdds.toggleEnabled}
-          onPotSizeChange={potOdds.setPotSize}
-          onCallAmountChange={potOdds.setCallAmount}
-        />
 
         <TutorialOverlay
           active={tutorial.active}
