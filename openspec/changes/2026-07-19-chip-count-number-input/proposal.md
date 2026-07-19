@@ -17,4 +17,4 @@
 
 ## Status
 
-- [ ] 未着手（backlog）
+- [x] 実装済み（ScrollableCounter を number input に完全置き換え。tutorial 文言・specs も更新）

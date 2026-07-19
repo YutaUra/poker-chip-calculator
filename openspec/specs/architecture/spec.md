@@ -52,7 +52,7 @@
 ```
 index.html → main.tsx → App.tsx → PokerChipCalculator.tsx
   ├── UnitInputSelect (ブラインド入力)
-  ├── ChipIcon + ScrollableCounter + Button (チップリスト)
+  ├── ChipIcon + 枚数入力 (number input) + Button (チップリスト)
   ├── StackGraph (BB推移 + チップ額推移の折れ線グラフ)
   └── Total Stack 表示
 

@@ -27,7 +27,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     selector: '[data-tutorial="chip-counter"]',
     title: "チップ枚数の操作",
     description:
-      "上下にドラッグまたはスクロールでチップの枚数を変更できます。",
+      "チップの枚数を直接入力して変更できます。",
   },
   {
     id: "add-chip",

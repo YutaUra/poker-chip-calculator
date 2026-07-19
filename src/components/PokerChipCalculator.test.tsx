@@ -122,15 +122,11 @@ describe("PokerChipCalculator", () => {
   })
 
   describe("チップ枚数変更", () => {
-    it("枚数を変更すると Total Stack が更新される", () => {
+    it("枚数を入力すると Total Stack が更新される", () => {
       render(<PokerChipCalculator />)
 
       const chipCounter = screen.getByLabelText("チップ枚数")
-
-      // ArrowUp を10回押して枚数を 10 → 20 に増やす
-      for (let i = 0; i < 10; i++) {
-        fireEvent.keyDown(chipCounter, { key: "ArrowUp" })
-      }
+      fireEvent.change(chipCounter, { target: { value: "20" } })
 
       // 100 × 20 = 2,000
       expect(screen.getByText("Total Stack: 2K")).toBeInTheDocument()
@@ -335,32 +331,56 @@ describe("PokerChipCalculator", () => {
     })
   })
 
-  describe("ScrollableCounter 統合", () => {
-    it("チップ枚数の入力に ScrollableCounter が使用されている", () => {
+  describe("チップ枚数 number input 統合", () => {
+    it("チップ枚数の入力に number input が使用されている", () => {
       render(<PokerChipCalculator />)
 
-      // ScrollableCounter は aria-label="チップ枚数" を持つ
-      // 統合されていれば、この要素が存在するはず
       const counter = screen.getByLabelText("チップ枚数")
       expect(counter).toBeInTheDocument()
-      expect(counter).toHaveAttribute("role", "spinbutton")
-      expect(counter).toHaveAttribute("aria-valuenow", "10")
+      expect(counter).toHaveAttribute("type", "number")
+      expect(counter).toHaveAttribute("inputmode", "numeric")
+      expect(counter).toHaveValue(10)
     })
 
-    it("ScrollableCounter のキーボード操作で合計額が更新される", () => {
+    it("枚数を直接入力すると合計額が更新される", () => {
       render(<PokerChipCalculator />)
 
       const counter = screen.getByLabelText("チップ枚数")
-
-      // ArrowUp を5回押して枚数を 10 → 15 に増やす
-      for (let i = 0; i < 5; i++) {
-        fireEvent.keyDown(counter, { key: "ArrowUp" })
-      }
+      fireEvent.change(counter, { target: { value: "15" } })
 
       // 100 × 15 = 1,500 → "1.5K"
       expect(screen.getByText("Total Stack: 1.5K")).toBeInTheDocument()
       expect(screen.getByText("(1,500 chips)")).toBeInTheDocument()
       expect(screen.getByText("(15 Big Blinds)")).toBeInTheDocument()
+    })
+
+    it("入力を空にすると枚数0として扱われる", () => {
+      render(<PokerChipCalculator />)
+
+      const counter = screen.getByLabelText("チップ枚数")
+      fireEvent.change(counter, { target: { value: "" } })
+
+      expect(screen.getByText("Total Stack: 0")).toBeInTheDocument()
+      expect(counter).toHaveValue(null)
+    })
+
+    it("負の値は 0 に補正される", () => {
+      render(<PokerChipCalculator />)
+
+      const counter = screen.getByLabelText("チップ枚数")
+      fireEvent.change(counter, { target: { value: "-5" } })
+
+      expect(counter).toHaveValue(0)
+      expect(screen.getByText("Total Stack: 0")).toBeInTheDocument()
+    })
+
+    it("999 を超える値は 999 に補正される", () => {
+      render(<PokerChipCalculator />)
+
+      const counter = screen.getByLabelText("チップ枚数")
+      fireEvent.change(counter, { target: { value: "1500" } })
+
+      expect(counter).toHaveValue(999)
     })
   })
 })

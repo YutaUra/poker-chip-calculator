@@ -5,9 +5,9 @@ import type { Unit } from "@/lib/units"
 import { formatChipAmount } from "@/lib/format-numbers"
 import type { ChipRow } from "@/lib/chip-logic"
 import ChipIcon from "./ChipIcon"
-import ScrollableCounter from "./ScrollableCounter"
 import ChipEditForm from "./ChipEditForm"
 import { Button } from "./ui/button"
+import { Input } from "./ui/input"
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog"
+
+const MIN_CHIP_COUNT = 0
+const MAX_CHIP_COUNT = 999
+
+function clampChipCount(raw: string): number | null {
+  if (raw === "") return null
+  const parsed = Number(raw)
+  if (Number.isNaN(parsed)) return null
+  return Math.min(MAX_CHIP_COUNT, Math.max(MIN_CHIP_COUNT, Math.trunc(parsed)))
+}
 
 interface ChipListSectionProps {
   chips: ChipRow[]
@@ -91,11 +101,15 @@ export default function ChipListSection({
               onSave={({amount, unit, color}) => updateChip(chip.id, amount, unit, color)}
             />
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <ScrollableCounter
-                value={chip.count ?? 0}
-                min={0}
-                max={999}
-                onChange={(v) => updateChipCount(chip.id, v)}
+              <Input
+                type="number"
+                inputMode="numeric"
+                aria-label="チップ枚数"
+                value={chip.count ?? ""}
+                min={MIN_CHIP_COUNT}
+                max={MAX_CHIP_COUNT}
+                onChange={(e) => updateChipCount(chip.id, clampChipCount(e.currentTarget.value))}
+                className="w-20 text-center tabular-nums"
                 {...(index === 0 ? { "data-tutorial": "chip-counter" } : {})}
               />
               <span className="text-sm text-muted-foreground flex-1 text-right">= {formatChipAmount(chipTotal)}</span>

@@ -32,7 +32,7 @@ Big Blind (BB) セクション SHALL 数値入力 (spinbutton) と単位セレ�
 
 ### Requirement: チップ行の管理機能を提供する
 
-Chips セクション SHALL チップの追加・削除・編集機能に加え、プリセット選択機能を提供する。チップ個数の入力はドラムロール型の ScrollableCounter コンポーネントを使用する。
+Chips セクション SHALL チップの追加・削除・編集機能に加え、プリセット選択機能を提供する。チップ個数の入力は number input を使用する。
 
 #### Scenario: チップの追加
 
@@ -67,7 +67,7 @@ Chips セクション SHALL チップの追加・削除・編集機能に加え�
 
 #### Scenario: チップ個数の変更
 
-- **WHEN** チップ行の ScrollableCounter をスクロール操作した場合
+- **WHEN** チップ行の枚数入力欄に値を入力した場合
 - **THEN** チップの個数が更新される
 - **THEN** 小計 `= {小計の短縮表記}` がリアルタイムで更新される
 - **THEN** Total Stack の合計額とBB換算が再計算される
@@ -244,6 +244,6 @@ Stack Graph セクション SHALL 「グラフに記録」ボタン、BB推移�
 
 - **WHEN** ページを表示した場合
 - **THEN** Big Blind 入力エリアに `data-tutorial="blind-input"` が付与される
-- **THEN** チップリストの最初の ScrollableCounter に `data-tutorial="chip-counter"` が付与される
+- **THEN** チップリストの最初の枚数入力欄に `data-tutorial="chip-counter"` が付与される
 - **THEN** "add chip" ボタンに `data-tutorial="add-chip"` が付与される
 - **THEN** 記録ボタンに `data-tutorial="record-button"` が付与される
