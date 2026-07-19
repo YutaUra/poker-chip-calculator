@@ -138,20 +138,20 @@ export default function StackRecordSection({
   return (
     <>
       <section className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em]">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-[0.2em] shrink-0">
             Stack Graph
           </h2>
-          <div className="flex items-center gap-1">
+          {/* アイコンのみ6個でも将来ボタンが増えた場合に備えて折り返しを許可する */}
+          <div className="flex items-center gap-1 flex-wrap justify-end">
             <Button
               variant="ghost"
               size="sm"
               onClick={onOpenHistory}
-              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
               aria-label="セッション履歴"
             >
-              <History className="h-3.5 w-3.5 mr-1" />
-              履歴
+              <History className="h-3.5 w-3.5" />
             </Button>
             {onImport && (
               <>
@@ -159,11 +159,10 @@ export default function StackRecordSection({
                   variant="ghost"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                   aria-label="セッションをインポート"
                 >
-                  <Upload className="h-3.5 w-3.5 mr-1" />
-                  Import
+                  <Upload className="h-3.5 w-3.5" />
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -182,11 +181,10 @@ export default function StackRecordSection({
                     variant="ghost"
                     size="sm"
                     disabled={session.snapshots.length === 0}
-                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                     aria-label="セッションをエクスポート"
                   >
-                    <Download className="h-3.5 w-3.5 mr-1" />
-                    Export
+                    <Download className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -210,32 +208,29 @@ export default function StackRecordSection({
                     variant="ghost"
                     size="sm"
                     onClick={onShare}
-                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                     aria-label="セッション結果を共有"
                   >
-                    <Share2 className="h-3.5 w-3.5 mr-1" />
-                    共有
+                    <Share2 className="h-3.5 w-3.5" />
                   </Button>
                 )}
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={removeLast}
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                   aria-label="直前の記録を削除"
                 >
-                  <Undo2 className="h-3.5 w-3.5 mr-1" />
-                  取消
+                  <Undo2 className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowResetDialog(true)}
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                   aria-label="新しいセッションを開始"
                 >
-                  <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  リセット
+                  <RotateCcw className="h-3.5 w-3.5" />
                 </Button>
               </>
             )}

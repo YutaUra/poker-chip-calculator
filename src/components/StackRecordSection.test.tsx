@@ -40,6 +40,48 @@ function makeSessionWithSnapshots(count: number): Session {
   }
 }
 
+describe("StackRecordSection ヘッダーアクション", () => {
+  const defaultProps = {
+    total: 50000,
+    bbValue: 100,
+    blindAmount: 500 as number | null,
+    blindUnit: "1" as const,
+    record: vi.fn(),
+    removeLast: vi.fn(),
+    reset: vi.fn(),
+    onArchiveAndReset: vi.fn(),
+    updateMemo: vi.fn(),
+    onOpenHistory: vi.fn(),
+    onShare: vi.fn(),
+    onExportCSV: vi.fn(),
+    onExportJSON: vi.fn(),
+    onImport: vi.fn(),
+  }
+
+  it("全アクションが揃ってもボタンはアイコンのみでテキストラベルを表示しない", () => {
+    // SP 幅（約375px）でテキスト付きボタン6個が1行に収まらず
+    // はみ出していたため、ヘッダーのアクションはアイコンのみとする
+    const session = makeSessionWithSnapshots(2)
+    render(<StackRecordSection {...defaultProps} session={session} />)
+
+    for (const label of ["履歴", "Import", "Export", "共有", "取消", "リセット"]) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument()
+    }
+  })
+
+  it("アイコン化してもアクセシブルネームで各アクションにアクセスできる", () => {
+    const session = makeSessionWithSnapshots(2)
+    render(<StackRecordSection {...defaultProps} session={session} />)
+
+    expect(screen.getByLabelText("セッション履歴")).toBeInTheDocument()
+    expect(screen.getByLabelText("セッションをインポート")).toBeInTheDocument()
+    expect(screen.getByLabelText("セッションをエクスポート")).toBeInTheDocument()
+    expect(screen.getByLabelText("セッション結果を共有")).toBeInTheDocument()
+    expect(screen.getByLabelText("直前の記録を削除")).toBeInTheDocument()
+    expect(screen.getByLabelText("新しいセッションを開始")).toBeInTheDocument()
+  })
+})
+
 describe("StackRecordSection リセットダイアログ", () => {
   const defaultProps = {
     total: 50000,
