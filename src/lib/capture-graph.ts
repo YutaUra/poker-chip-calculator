@@ -1,17 +1,12 @@
 export async function captureGraphImage(element: HTMLElement): Promise<Blob> {
-  const html2canvas = (await import("html2canvas")).default
-  const canvas = await html2canvas(element, {
-    backgroundColor: null,
+  // html2canvas を使わない理由:
+  // Tailwind CSS 4 のテーマ色と StackGraph の色指定は oklch() だが、
+  // html2canvas（1.x、メンテ停止）は oklch をパースできず例外を投げるため、
+  // iOS Safari 等でキャプチャが常に失敗していた。
+  // modern-screenshot は算出スタイルベースでレンダリングするため oklch を扱える。
+  const { domToBlob } = await import("modern-screenshot")
+  return domToBlob(element, {
+    type: "image/png",
     scale: 2,
-  })
-
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob)
-      } else {
-        reject(new Error("Failed to capture graph image"))
-      }
-    })
   })
 }

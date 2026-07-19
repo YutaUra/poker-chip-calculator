@@ -19,4 +19,4 @@
 
 ## Status
 
-- [ ] 未着手（backlog）
+- [x] 実装済み（原因は html2canvas が oklch() 非対応で常に例外→silent fallback。modern-screenshot に置き換え、失敗時は toast で通知するようにした）

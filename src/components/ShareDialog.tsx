@@ -55,7 +55,10 @@ export default function ShareDialog({
         setImageFile(new File([blob], "stack-graph.png", { type: "image/png" }))
       })
       .catch(() => {
-        // キャプチャ失敗時はテキストのみでシェアする
+        if (cancelled) return
+        // 画像なしに黙って落とすと「共有できない」ように見えるため、
+        // テキストのみになることを明示的に伝える
+        toast.error("グラフ画像の作成に失敗したため、テキストのみでシェアします")
       })
       .finally(() => {
         if (!cancelled) setCapturing(false)
