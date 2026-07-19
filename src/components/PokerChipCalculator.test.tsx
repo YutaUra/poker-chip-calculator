@@ -315,69 +315,23 @@ describe("PokerChipCalculator", () => {
     })
   })
 
-  describe("アンティ・M値統合", () => {
-    it("Ante ラベルが表示される", () => {
+  describe("アンティ・M値の削除", () => {
+    it("Ante 入力が表示されない", () => {
       render(<PokerChipCalculator />)
-      expect(screen.getByText("Ante:")).toBeInTheDocument()
+      expect(screen.queryByText("Ante:")).not.toBeInTheDocument()
     })
 
-    it("Players ラベルが表示される", () => {
+    it("Players 入力が表示されない", () => {
       render(<PokerChipCalculator />)
-      expect(screen.getByText("Players:")).toBeInTheDocument()
+      expect(screen.queryByText("Players:")).not.toBeInTheDocument()
     })
 
-    it("初期状態ではM-Ratioが表示されない（アンティがデフォルト0のため）", () => {
+    it("アンティが sessionStorage に残っていても M-Ratio を表示しない", () => {
+      sessionStorage.setItem("current-ante-amount", JSON.stringify(10))
+      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
+      sessionStorage.setItem("current-players", JSON.stringify(9))
       render(<PokerChipCalculator />)
       expect(screen.queryByText(/M-Ratio:/)).not.toBeInTheDocument()
-    })
-
-    it("アンティを入力するとM-Ratioが表示される", () => {
-      // sessionStorage にアンティ=10を設定
-      sessionStorage.setItem("current-ante-amount", JSON.stringify(10))
-      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
-      sessionStorage.setItem("current-players", JSON.stringify(9))
-      render(<PokerChipCalculator />)
-
-      // 初期: total=1000, BB=100, SB=50, ante=10, players=9
-      // M = 1000 / (50 + 100 + 10 × 9) = 1000 / 240 ≈ 4.2
-      expect(screen.getByText(/M-Ratio:/)).toBeInTheDocument()
-    })
-
-    it("M値が小数の場合は小数第1位まで表示する", () => {
-      sessionStorage.setItem("current-ante-amount", JSON.stringify(10))
-      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
-      sessionStorage.setItem("current-players", JSON.stringify(9))
-      render(<PokerChipCalculator />)
-
-      // M = 1000 / 240 ≈ 4.166... → "4.2"
-      expect(screen.getByText("4.2")).toBeInTheDocument()
-    })
-
-    it("M値のゾーン色が適用される（red: M < 5）", () => {
-      sessionStorage.setItem("current-ante-amount", JSON.stringify(10))
-      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
-      sessionStorage.setItem("current-players", JSON.stringify(9))
-      render(<PokerChipCalculator />)
-
-      // M ≈ 4.2 → red zone
-      const mValueSpan = screen.getByText("4.2")
-      expect(mValueSpan).toHaveClass("text-red-500")
-    })
-
-    it("プレイヤー人数のデフォルト値が9である", () => {
-      render(<PokerChipCalculator />)
-      const playersInput = screen.getByLabelText("Players:")
-      expect(playersInput).toHaveValue(9)
-    })
-
-    it("sessionStorage からアンティとプレイヤー人数を復元する", () => {
-      sessionStorage.setItem("current-ante-amount", JSON.stringify(25))
-      sessionStorage.setItem("current-ante-unit", JSON.stringify("1"))
-      sessionStorage.setItem("current-players", JSON.stringify(6))
-      render(<PokerChipCalculator />)
-
-      const playersInput = screen.getByLabelText("Players:")
-      expect(playersInput).toHaveValue(6)
     })
   })
 
